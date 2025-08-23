@@ -4,41 +4,67 @@
 
 @layer base {
   :root {
-    /* Themeable Colors - Restored to Original Vibe */
-    --background: 210 11% 7%; /* #0f1211 */
-    --foreground: 160 14% 93%; /* #e7eceb */
+    /* Light Mode Colors */
+    --background: 0 0% 100%; /* #ffffff */
+    --foreground: 240 10% 3.9%; /* #0f0f23 */
 
-    --muted: 240 2% 16%; /* #27272a */
-    --muted-foreground: 160 14% 93% / 0.7; /* rgba(231, 236, 235, 0.7) */
-    --muted-foreground-light: 160 14% 93% / 0.5; /* rgba(231, 236, 235, 0.5) */
-    --muted-foreground-dark: 160 14% 93% / 0.6; /* rgba(231, 236, 235, 0.6) */
+    --card: 0 0% 100%; /* #ffffff */
+    --card-foreground: 240 10% 3.9%; /* #0f0f23 */
 
-    --card: 220 17% 98% / 0.01;
-    --card-foreground: 160 14% 93%;
+    --popover: 0 0% 100%; /* #ffffff */
+    --popover-foreground: 240 10% 3.9%; /* #0f0f23 */
 
-    --popover: 210 11% 7%;
-    --popover-foreground: 160 14% 93%;
+    --primary: 180 100% 25%; /* #006666 - Dark Teal */
+    --primary-foreground: 0 0% 98%; /* #fafafa */
 
-    /* Primary Accent Colors */
-    --primary: 165 96% 71%; /* #78fcd6 */
-    --primary-foreground: 160 8% 6%; /* #0d0f0e */
-    --primary-dark: 160 100% 50%; /* #00ffb6 */
-    --primary-light: 160 48% 87%; /* New variable for lighter teal/green shades */
+    --secondary: 180 100% 95%; /* #e6ffff - Light Teal */
+    --secondary-foreground: 180 100% 25%; /* #006666 */
 
-    /* Secondary Accent Colors (for buttons, etc.) */
-    --secondary: 160 14% 93%; /* #e7eceb */
-    --secondary-foreground: 165 14% 8%; /* #141a18 */
+    --muted: 240 4.8% 95.9%; /* #f1f5f9 */
+    --muted-foreground: 240 3.8% 46.1%; /* #71717a */
 
-    --accent: 240 2% 25%; /* #3f3f42 */
-    --accent-foreground: 240 2% 96%; /* #f4f4f5 */
+    --accent: 180 100% 90%; /* #ccffff - Very Light Teal */
+    --accent-foreground: 180 100% 25%; /* #006666 */
 
-    --border: 240 100% 100% / 0.08; /* rgba(255, 255, 255, 0.08) */
-    --border-light: 210 17% 6% / 0.1; /* rgba(16,24,40,0.1) */
-    --border-dark: 210 17% 6% / 0.05; /* rgba(16,24,40,0.05) */
+    --destructive: 0 84.2% 60.2%; /* #ef4444 */
+    --destructive-foreground: 0 0% 98%; /* #fafafa */
 
-    --ring: 165 96% 71%;
+    --border: 240 5.9% 90%; /* #e5e7eb */
+    --input: 240 5.9% 90%; /* #e5e7eb */
+    --ring: 180 100% 25%; /* #006666 */
 
     --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark Mode Colors */
+    --background: 240 10% 3.9%; /* #0f0f23 - Very Dark */
+    --foreground: 0 0% 98%; /* #fafafa */
+
+    --card: 240 10% 3.9%; /* #0f0f23 */
+    --card-foreground: 0 0% 98%; /* #fafafa */
+
+    --popover: 240 10% 3.9%; /* #0f0f23 */
+    --popover-foreground: 0 0% 98%; /* #fafafa */
+
+    --primary: 180 100% 60%; /* #00e6e6 - Bright Teal */
+    --primary-foreground: 240 10% 3.9%; /* #0f0f23 */
+
+    --secondary: 180 100% 15%; /* #003333 - Very Dark Teal */
+    --secondary-foreground: 180 100% 80%; /* #66ffff */
+
+    --muted: 240 3.7% 15.9%; /* #262626 */
+    --muted-foreground: 240 5% 64.9%; /* #a1a1aa */
+
+    --accent: 180 100% 20%; /* #004d4d - Dark Teal */
+    --accent-foreground: 180 100% 80%; /* #66ffff */
+
+    --destructive: 0 62.8% 30.6%; /* #7f1d1d */
+    --destructive-foreground: 0 0% 98%; /* #fafafa */
+
+    --border: 240 3.7% 15.9%; /* #262626 */
+    --input: 240 3.7% 15.9%; /* #262626 */
+    --ring: 180 100% 60%; /* #00e6e6 */
   }
 }
 
