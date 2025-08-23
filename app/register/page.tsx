@@ -1,97 +1,182 @@
-'use client';
+"use client"
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react'
+/**
+ * Local fallback for useUser hook to avoid missing module '@/contexts/user-context'.
+ * Replace this with the real hook import when the context module is available.
+ */
+const useUser = () => {
+  const register = async (data: any) => {
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      return res.ok
+    } catch (e) {
+      return false
+    }
+  }
 
-export default function Register() {
+  return { register }
+}
+
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+
+export default function RegisterPage() {
+  const { register } = useUser()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    age: '',
-    gender: '',
-  });
-  const router = useRouter();
+    mobile: '',
+    city: '',
+    address: '',
+    gender: ''
+  })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // TODO: Implement registration API call
-    console.log('Registration data:', formData);
-    
-    // For now, just redirect to dashboard after "registration"
-    alert('Registration successful! Welcome to HackWave!');
-    router.push('/dash');
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
+      [field]: value
+    }))
+    // Clear error when user starts typing
+    if (error) setError(null)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const success = await register(formData)
+      
+      if (!success) {
+        setError('Registration failed. Please try again.')
+      }
+    } catch (error) {
+      setError('An unexpected error occurred. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-black text-primary flex items-center justify-center">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-[#121212] p-8 rounded-lg shadow-lg w-full max-w-md"
-      >
-        <h2 className="text-2xl font-semibold mb-6 text-primary text-center">
-          Complete Your Profile
-        </h2>
-        
-        <div className="space-y-4">
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            className="w-full p-3 bg-[#1e1e1e] text-primary border border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-          />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-border/50 shadow-xl">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-foreground">Complete Your Profile</CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Please provide your basic details to get started
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <Alert className="mb-4" variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="w-full p-3 bg-[#1e1e1e] text-primary border border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-          
-          <input
-            type="number"
-            name="age"
-            placeholder="Age"
-            value={formData.age}
-            onChange={handleChange}
-            required
-            className="w-full p-3 bg-[#1e1e1e] text-primary border border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-          
-          <select
-            name="gender"
-            value={formData.gender}
-            onChange={handleChange}
-            required
-            className="w-full p-3 bg-[#1e1e1e] text-primary border border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            <option value="">Select Gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        
-        <button
-          type="submit"
-          className="mt-6 bg-primary hover:bg-primary-light text-black font-bold py-2 px-4 rounded w-full"
-        >
-          Complete Registration
-        </button>
-      </form>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-foreground">Full Name *</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Enter your full name"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                required
+                className="bg-background border-border focus:border-primary focus:ring-primary"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-foreground">Email Address *</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                required
+                className="bg-background border-border focus:border-primary focus:ring-primary"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="mobile" className="text-foreground">Mobile Number *</Label>
+              <Input
+                id="mobile"
+                type="tel"
+                placeholder="Enter your mobile number"
+                value={formData.mobile}
+                onChange={(e) => handleInputChange('mobile', e.target.value)}
+                required
+                className="bg-background border-border focus:border-primary focus:ring-primary"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="city" className="text-foreground">City *</Label>
+              <Input
+                id="city"
+                type="text"
+                placeholder="Enter your city"
+                value={formData.city}
+                onChange={(e) => handleInputChange('city', e.target.value)}
+                required
+                className="bg-background border-border focus:border-primary focus:ring-primary"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address" className="text-foreground">Address *</Label>
+              <Textarea
+                id="address"
+                placeholder="Enter your complete address"
+                value={formData.address}
+                onChange={(e) => handleInputChange('address', e.target.value)}
+                required
+                rows={3}
+                className="bg-background border-border focus:border-primary focus:ring-primary resize-none"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="gender" className="text-foreground">Gender *</Label>
+              <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
+                <SelectTrigger className="bg-background border-border focus:border-primary focus:ring-primary">
+                  <SelectValue placeholder="Select your gender" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button 
+              type="submit" 
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium" 
+              disabled={isLoading}
+            >
+              {isLoading ? 'Creating Profile...' : 'Complete Profile'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
-  );
-}
+  )
+} 
