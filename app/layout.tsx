@@ -6,9 +6,16 @@ import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: 'Janvaani - Voice-Based AI Assistant for Municipal Services',
+  description: 'Transform how citizens interact with local government. Get instant answers, submit requests, and access services through natural voice conversations.',
+  generator: 'Next.js',
+  keywords: ['AI Assistant', 'Municipal Services', 'Voice Technology', 'Government Services', 'Smart City', 'Citizen Services'],
+  authors: [{ name: 'Janvaani Team' }],
+  openGraph: {
+    title: 'Janvaani - Voice-Based AI Assistant for Municipal Services',
+    description: 'Transform how citizens interact with local government through voice-based AI technology.',
+    type: 'website',
+  },
 }
 
 export default function RootLayout({

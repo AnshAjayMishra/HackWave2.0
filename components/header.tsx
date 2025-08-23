@@ -15,8 +15,8 @@ export function Header() {
   
   const navItems = [
     { name: "Features", href: "#features-section" },
-    { name: "Pricing", href: "#pricing-section" },
-    { name: "Testimonials", href: "#testimonials-section" },
+    { name: "How It Works", href: "#how-it-works" },
+    { name: "Benefits", href: "#benefits" },
   ]
 
   const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -38,7 +38,7 @@ export function Header() {
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
             <Link href="/" className="text-foreground text-xl font-semibold hover:text-primary transition-colors">
-              Pointer
+              Janvaani
             </Link>
           </div>
           <nav className="hidden md:flex items-center gap-2">
