@@ -13,17 +13,39 @@ export default function VerifyOtp() {
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch('/api/verify-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mobile, otp }),
-    });
+    try {
+      const res = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobile, otp }),
+      });
 
-    if (res.ok) {
-      alert('OTP verified! Logged in.');
-      router.push('/dashboard');
-    } else {
-      alert('Invalid OTP');
+      if (res.ok) {
+        const data = await res.json();
+        
+        // Store the JWT token if provided
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
+        }
+
+        // Check if user is a first-time visitor
+        // This can be determined by checking if user has profile data
+        const isFirstTimeUser = !data.user?.name || !data.user?.email || data.user?.isNewUser;
+
+        if (isFirstTimeUser) {
+          // Redirect to register page for first-time users
+          router.push('/register');
+        } else {
+          // Redirect to dashboard for existing users
+          router.push('/dash');
+        }
+      } else {
+        const errorData = await res.json();
+        alert(errorData.error || 'Invalid OTP');
+      }
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      alert('Failed to verify OTP. Please try again.');
     }
   };
 

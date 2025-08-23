@@ -13,6 +13,8 @@ export async function POST(req: NextRequest) {
     });
 
     const data = await backendRes.json();
+    
+    // Return the response with the same status code as backend
     return NextResponse.json(data, { status: backendRes.status });
   } catch (error) {
     console.error('Error calling backend:', error);
