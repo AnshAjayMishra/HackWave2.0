@@ -4,23 +4,25 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { useRouter } from 'next/navigation'
 
 interface User {
-  id: string
-  name: string
-  email: string
-  city: string
+  _id: string
   mobile: string
-  gender: string
-  createdAt: string
+  verified: boolean
+  name?: string
+  email?: string
+  age?: number
+  gender?: string
+  location?: string
+  createdAt?: string
 }
 
 interface UserContextType {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<boolean>
-  register: (userData: Omit<User, 'id' | 'createdAt'>) => Promise<boolean>
+  updateProfile: (userData: Partial<User>) => Promise<boolean>
   logout: () => Promise<void>
   checkAuth: () => Promise<void>
+  getAuthToken: () => string | null
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -30,87 +32,83 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
+  const getAuthToken = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('authToken')
+    }
+    return null
+  }
+
   const checkAuth = async () => {
     try {
-      // TODO: Replace with actual API endpoint
-      const response = await fetch('/api/auth/me', {
-        credentials: 'include'
+      const token = getAuthToken()
+      if (!token) {
+        setUser(null)
+        setIsLoading(false)
+        return
+      }
+
+      const response = await fetch('/api/user/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       })
 
       if (response.ok) {
-        const userData = await response.json()
-        setUser(userData)
+        const data = await response.json()
+        if (data.user) {
+          setUser(data.user)
+        } else {
+          setUser(null)
+          localStorage.removeItem('authToken')
+        }
       } else {
         setUser(null)
+        localStorage.removeItem('authToken')
       }
     } catch (error) {
       console.error('Auth check error:', error)
       setUser(null)
+      localStorage.removeItem('authToken')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const updateProfile = async (userData: Partial<User>): Promise<boolean> => {
     try {
-      // TODO: Replace with actual login API endpoint
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
+      const token = getAuthToken()
+      if (!token) {
+        return false
+      }
+
+      const response = await fetch('/api/user/profile', {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include'
+        body: JSON.stringify(userData)
       })
 
       if (response.ok) {
-        const userData = await response.json()
-        setUser(userData)
-        router.push('/dash')
+        const data = await response.json()
+        if (data.user) {
+          setUser(data.user)
+        }
         return true
       } else {
         return false
       }
     } catch (error) {
-      console.error('Login error:', error)
-      return false
-    }
-  }
-
-  const register = async (userData: Omit<User, 'id' | 'createdAt'>): Promise<boolean> => {
-    try {
-      // TODO: Replace with actual registration API endpoint
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-        credentials: 'include'
-      })
-
-      if (response.ok) {
-        const newUser = await response.json()
-        setUser(newUser)
-        router.push('/dash')
-        return true
-      } else {
-        return false
-      }
-    } catch (error) {
-      console.error('Registration error:', error)
+      console.error('Profile update error:', error)
       return false
     }
   }
 
   const logout = async () => {
     try {
-      // TODO: Replace with actual logout API endpoint
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
-      })
-      
+      localStorage.removeItem('authToken')
       setUser(null)
       router.push('/')
     } catch (error) {
@@ -126,10 +124,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
     user,
     isLoading,
     isAuthenticated: !!user,
-    login,
-    register,
+    updateProfile,
     logout,
-    checkAuth
+    checkAuth,
+    getAuthToken
   }
 
   return (

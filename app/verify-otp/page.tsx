@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function VerifyOtp() {
   const [otp, setOtp] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   // Properly decode the mobile number from URL
@@ -12,6 +13,7 @@ export default function VerifyOtp() {
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       const res = await fetch('/api/verify-otp', {
@@ -28,24 +30,46 @@ export default function VerifyOtp() {
           localStorage.setItem('authToken', data.token);
         }
 
-        // Check if user is a first-time visitor
-        // This can be determined by checking if user has profile data
-        const isFirstTimeUser = !data.user?.name || !data.user?.email || data.user?.isNewUser;
+        // Check if user needs to complete profile
+        // If user doesn't have name or email, redirect to register
+        const user = data.user;
+        const needsProfileCompletion = !user?.name || !user?.email;
 
-        if (isFirstTimeUser) {
-          // Redirect to register page for first-time users
+        if (needsProfileCompletion) {
+          // Redirect to register page for profile completion
           router.push('/register');
         } else {
-          // Redirect to dashboard for existing users
+          // Redirect to dashboard for existing users with complete profiles
           router.push('/dash');
         }
       } else {
         const errorData = await res.json();
-        alert(errorData.error || 'Invalid OTP');
+        alert(errorData.detail || errorData.error || 'Invalid OTP');
       }
     } catch (error) {
       console.error('Error verifying OTP:', error);
       alert('Failed to verify OTP. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    try {
+      const res = await fetch('/api/resend-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobile }),
+      });
+
+      if (res.ok) {
+        alert('OTP sent successfully!');
+      } else {
+        alert('Failed to resend OTP. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error resending OTP:', error);
+      alert('Failed to resend OTP. Please try again.');
     }
   };
 
@@ -62,16 +86,25 @@ export default function VerifyOtp() {
           type="text"
           placeholder="Enter 6-digit OTP"
           value={otp}
-          onChange={(e) => setOtp(e.target.value)}
+          onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
           required
-          className="w-full p-3 bg-[#1e1e1e] text-primary border border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full p-3 bg-[#1e1e1e] text-primary border border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-primary mb-4"
           maxLength={6}
         />
         <button
           type="submit"
-          className="mt-4 bg-primary hover:bg-primary-light text-black font-bold py-2 px-4 rounded w-full"
+          disabled={isLoading}
+          className="w-full bg-primary hover:bg-primary-light text-black font-bold py-2 px-4 rounded mb-4 disabled:opacity-50"
         >
-          Verify OTP
+          {isLoading ? 'Verifying...' : 'Verify OTP'}
+        </button>
+        
+        <button
+          type="button"
+          onClick={handleResendOTP}
+          className="w-full bg-transparent border border-primary text-primary hover:bg-primary hover:text-black font-bold py-2 px-4 rounded"
+        >
+          Resend OTP
         </button>
       </form>
     </div>

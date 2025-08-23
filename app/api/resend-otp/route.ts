@@ -3,10 +3,10 @@ import { config } from '@/lib/config';
 
 export async function POST(req: NextRequest) {
   try {
-    const { mobile, otp } = await req.json();
+    const { mobile } = await req.json();
 
-    // Call your FastAPI backend with query parameters
-    const backendRes = await fetch(`${config.apiUrl}/api/auth/verify-otp?mobile=${encodeURIComponent(mobile)}&otp=${encodeURIComponent(otp)}`, {
+    // Call your FastAPI backend to resend OTP
+    const backendRes = await fetch(`${config.apiUrl}/api/auth/resend-otp?mobile=${encodeURIComponent(mobile)}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -14,11 +14,13 @@ export async function POST(req: NextRequest) {
     });
 
     const data = await backendRes.json();
+    
+    // Return the response with the same status code as backend
     return NextResponse.json(data, { status: backendRes.status });
   } catch (error) {
     console.error('Error calling backend:', error);
     return NextResponse.json(
-      { error: 'Failed to verify OTP' }, 
+      { error: 'Failed to resend OTP' }, 
       { status: 500 }
     );
   }

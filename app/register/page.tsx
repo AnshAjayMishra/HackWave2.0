@@ -1,27 +1,8 @@
 "use client"
 
 import { useState } from 'react'
-/**
- * Local fallback for useUser hook to avoid missing module '@/contexts/user-context'.
- * Replace this with the real hook import when the context module is available.
- */
-const useUser = () => {
-  const register = async (data: any) => {
-    try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-      return res.ok
-    } catch (e) {
-      return false
-    }
-  }
-
-  return { register }
-}
-
+import { useRouter } from 'next/navigation'
+import { useUser } from '@/app/contexts/user-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -31,15 +12,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function RegisterPage() {
-  const { register } = useUser()
+  const { updateProfile } = useUser()
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    mobile: '',
-    city: '',
-    address: '',
+    age: '',
+    location: '',
     gender: ''
   })
 
@@ -58,10 +39,19 @@ export default function RegisterPage() {
     setError(null)
 
     try {
-      const success = await register(formData)
+      // Convert age to number if provided
+      const profileData: any = { ...formData }
+      if (profileData.age) {
+        profileData.age = parseInt(profileData.age)
+      }
+
+      const success = await updateProfile(profileData)
       
-      if (!success) {
-        setError('Registration failed. Please try again.')
+      if (success) {
+        // Redirect to dashboard after successful profile completion
+        router.push('/dash')
+      } else {
+        setError('Failed to update profile. Please try again.')
       }
     } catch (error) {
       setError('An unexpected error occurred. Please try again.')
@@ -114,46 +104,33 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="mobile" className="text-foreground">Mobile Number *</Label>
+              <Label htmlFor="age" className="text-foreground">Age</Label>
               <Input
-                id="mobile"
-                type="tel"
-                placeholder="Enter your mobile number"
-                value={formData.mobile}
-                onChange={(e) => handleInputChange('mobile', e.target.value)}
-                required
+                id="age"
+                type="number"
+                placeholder="Enter your age"
+                value={formData.age}
+                onChange={(e) => handleInputChange('age', e.target.value)}
                 className="bg-background border-border focus:border-primary focus:ring-primary"
+                min="1"
+                max="120"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="city" className="text-foreground">City *</Label>
+              <Label htmlFor="location" className="text-foreground">Location</Label>
               <Input
-                id="city"
+                id="location"
                 type="text"
-                placeholder="Enter your city"
-                value={formData.city}
-                onChange={(e) => handleInputChange('city', e.target.value)}
-                required
+                placeholder="Enter your city/location"
+                value={formData.location}
+                onChange={(e) => handleInputChange('location', e.target.value)}
                 className="bg-background border-border focus:border-primary focus:ring-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address" className="text-foreground">Address *</Label>
-              <Textarea
-                id="address"
-                placeholder="Enter your complete address"
-                value={formData.address}
-                onChange={(e) => handleInputChange('address', e.target.value)}
-                required
-                rows={3}
-                className="bg-background border-border focus:border-primary focus:ring-primary resize-none"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="gender" className="text-foreground">Gender *</Label>
+              <Label htmlFor="gender" className="text-foreground">Gender</Label>
               <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
                 <SelectTrigger className="bg-background border-border focus:border-primary focus:ring-primary">
                   <SelectValue placeholder="Select your gender" />
