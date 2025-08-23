@@ -64,6 +64,11 @@ export function Header() {
                   Dashboard
                 </Button>
               </Link>
+              <Link href="/admin">
+                <Button variant="outline" className="border-border hover:bg-muted px-4 py-2 rounded-full font-medium">
+                  Admin
+                </Button>
+              </Link>
               <div className="flex items-center gap-3">
                 <div className="hidden md:flex items-center gap-2">
                   <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
@@ -125,6 +130,11 @@ export function Header() {
                     <Link href="/dash" className="w-full">
                       <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-full font-medium shadow-sm w-full">
                         Dashboard
+                      </Button>
+                    </Link>
+                    <Link href="/admin" className="w-full">
+                      <Button variant="outline" className="border-border hover:bg-muted px-6 py-2 rounded-full font-medium w-full">
+                        Admin Panel
                       </Button>
                     </Link>
                     <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">

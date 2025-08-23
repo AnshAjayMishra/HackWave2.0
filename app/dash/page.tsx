@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import Link from 'next/link'
+import { Settings, BarChart3 } from 'lucide-react'
 
 export default function DashboardPage() {
   const { user, isLoading, logout } = useUser()
@@ -37,6 +39,12 @@ export default function DashboardPage() {
               </Badge>
             </div>
             <div className="flex items-center space-x-4">
+              <Link href="/admin">
+                <Button variant="outline" className="border-border hover:bg-muted">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Admin Panel
+                </Button>
+              </Link>
               <Avatar>
                 <AvatarImage src="/placeholder-user.jpg" />
                 <AvatarFallback className="bg-primary text-primary-foreground">
@@ -110,22 +118,24 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full justify-start" variant="outline" className="border-border hover:bg-muted">
-                <span className="mr-2">📝</span>
+              <Button className="w-full justify-start border-border hover:bg-muted" variant="outline">
+                <Settings className="w-4 h-4 mr-2" />
                 Edit Profile
               </Button>
-              <Button className="w-full justify-start" variant="outline" className="border-border hover:bg-muted">
+              <Button className="w-full justify-start border-border hover:bg-muted" variant="outline">
                 <span className="mr-2">🔒</span>
                 Change Password
               </Button>
-              <Button className="w-full justify-start" variant="outline" className="border-border hover:bg-muted">
+              <Button className="w-full justify-start border-border hover:bg-muted" variant="outline">
                 <span className="mr-2">⚙️</span>
                 Settings
               </Button>
-              <Button className="w-full justify-start" variant="outline" className="border-border hover:bg-muted">
-                <span className="mr-2">📧</span>
-                Contact Support
-              </Button>
+              <Link href="/admin" className="w-full">
+                <Button className="w-full justify-start border-border hover:bg-muted" variant="outline">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  View Analytics
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
