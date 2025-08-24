@@ -59,6 +59,11 @@ export function Header() {
           
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
+              <Link href="/chatbot">
+                <Button variant="outline" className="border-border hover:bg-muted px-4 py-2 rounded-full font-medium">
+                  Chat Assistant
+                </Button>
+              </Link>
               <Link href="/dash">
                 <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-full font-medium shadow-sm">
                   Dashboard
@@ -76,19 +81,24 @@ export function Header() {
                   </Badge>
                   <span className="text-sm text-muted-foreground">{user?.name}</span>
                 </div>
-                <Avatar className="h-8 w-8">
+                <Avatar>
                   <AvatarImage src="/placeholder-user.jpg" />
-                  <AvatarFallback className="text-sm bg-primary text-primary-foreground">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
                     {user?.name?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <Button variant="outline" size="sm" onClick={handleLogout} className="border-border hover:bg-muted">
+                <Button variant="outline" onClick={handleLogout} className="border-border hover:bg-muted">
                   Logout
                 </Button>
               </div>
             </div>
           ) : (
             <div className="flex items-center gap-3">
+              <Link href="/chatbot">
+                <Button variant="outline" className="border-border hover:bg-muted px-4 py-2 rounded-full font-medium">
+                  Try Assistant
+                </Button>
+              </Link>
               <Link href="/login">
                 <Button variant="outline" className="px-6 py-2 rounded-full font-medium border-border hover:bg-muted">
                   Login
@@ -127,8 +137,13 @@ export function Header() {
                 
                 {isAuthenticated ? (
                   <div className="space-y-3">
+                    <Link href="/chatbot" className="w-full">
+                      <Button variant="outline" className="border-border hover:bg-muted px-6 py-2 rounded-full font-medium w-full">
+                        Chat Assistant
+                      </Button>
+                    </Link>
                     <Link href="/dash" className="w-full">
-                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-full font-medium shadow-sm w-full">
+                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-full font-medium w-full">
                         Dashboard
                       </Button>
                     </Link>
@@ -155,6 +170,11 @@ export function Header() {
                   </div>
                 ) : (
                   <div className="space-y-3">
+                    <Link href="/chatbot" className="w-full">
+                      <Button variant="outline" className="border-border hover:bg-muted px-6 py-2 rounded-full font-medium w-full">
+                        Try Assistant
+                      </Button>
+                    </Link>
                     <Link href="/login" className="w-full">
                       <Button variant="outline" className="px-6 py-2 rounded-full font-medium w-full border-border hover:bg-muted">
                         Login
