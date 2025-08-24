@@ -25,10 +25,7 @@ export default function LandingPage() {
         <div className="relative z-10 max-w-[1320px] mx-auto px-6 mt-16">
           <BenefitsSection />
         </div>
-
-       
-
-        <div className="relative z-10 max-w-[1320px] mx-auto px-6 mt-16">
+          <div className="relative z-10 max-w-[1320px] mx-auto px-6 mt-16">
           <FooterSection />
         </div>
       </div>

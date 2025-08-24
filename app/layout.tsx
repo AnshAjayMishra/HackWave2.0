@@ -4,9 +4,9 @@ import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: 'Janvaani - Voice Based AI Assistant for Municipal Services ',
+  description: 'Janvaani is a voice-based AI assistant designed to help users navigate municipal services and access information quickly and efficiently.',
+  generator: 'Janvaani',
 }
 
 export default function RootLayout({

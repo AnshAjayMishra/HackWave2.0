@@ -1,88 +1,187 @@
 "use client"
 
-import { Twitter, Github, Linkedin } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { 
+  Mic, 
+  Mail, 
+  Phone, 
+  MapPin, 
+  Globe, 
+  Shield, 
+  Users,
+  FileText
+} from "lucide-react"
+import Link from "next/link"
 
 export function FooterSection() {
+  const footerLinks = {
+    product: [
+      { name: "Features", href: "#features-section" },
+      { name: "How It Works", href: "#how-it-works" },
+      { name: "Benefits", href: "#benefits" },
+      { name: "Security", href: "#security" },
+      { name: "Pricing", href: "#pricing" }
+    ],
+    solutions: [
+      { name: "Citizen Services", href: "#citizen-services" },
+      { name: "Government Agencies", href: "#government" },
+      { name: "Municipal Operations", href: "#operations" },
+      { name: "Emergency Services", href: "#emergency" },
+      { name: "Public Works", href: "#public-works" }
+    ],
+    support: [
+      { name: "Documentation", href: "#docs" },
+      { name: "API Reference", href: "#api" },
+      { name: "Help Center", href: "#help" },
+      { name: "Contact Support", href: "#contact" },
+      { name: "Training", href: "#training" }
+    ],
+    company: [
+      { name: "About Us", href: "#about" },
+      { name: "Careers", href: "#careers" },
+      { name: "Press", href: "#press" },
+      { name: "Partners", href: "#partners" },
+      { name: "Blog", href: "#blog" }
+    ]
+  }
+
+  const socialLinks = [
+    { name: "Twitter", href: "#", icon: "𝕏" },
+    { name: "LinkedIn", href: "#", icon: "in" },
+    { name: "GitHub", href: "#", icon: "⌥" },
+    { name: "YouTube", href: "#", icon: "▶" }
+  ]
+
   return (
-    <footer className="w-full max-w-[1320px] mx-auto px-5 flex flex-col md:flex-row justify-between items-start gap-8 md:gap-0 py-10 md:py-[70px]">
-      {/* Left Section: Logo, Description, Social Links */}
-      <div className="flex flex-col justify-start items-start gap-8 p-4 md:p-8">
-        <div className="flex gap-3 items-stretch justify-center">
-          <div className="text-center text-foreground text-xl font-semibold leading-4">Pointer</div>
-        </div>
-        <p className="text-foreground/90 text-sm font-medium leading-[18px] text-left">Coding made effortless</p>
-        <div className="flex justify-start items-start gap-3">
-          <a href="#" aria-label="Twitter" className="w-4 h-4 flex items-center justify-center">
-            <Twitter className="w-full h-full text-muted-foreground" />
-          </a>
-          <a href="#" aria-label="GitHub" className="w-4 h-4 flex items-center justify-center">
-            <Github className="w-full h-full text-muted-foreground" />
-          </a>
-          <a href="#" aria-label="LinkedIn" className="w-4 h-4 flex items-center justify-center">
-            <Linkedin className="w-full h-full text-muted-foreground" />
-          </a>
-        </div>
-      </div>
-      {/* Right Section: Product, Company, Resources */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 p-4 md:p-8 w-full md:w-auto">
-        <div className="flex flex-col justify-start items-start gap-3">
-          <h3 className="text-muted-foreground text-sm font-medium leading-5">Product</h3>
-          <div className="flex flex-col justify-end items-start gap-2">
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              Features
-            </a>
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              Pricing
-            </a>
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              Integrations
-            </a>
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              Real-time Previews
-            </a>
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              Multi-Agent Coding
-            </a>
+    <footer className="bg-card/50 border-t border-border/50">
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+          {/* Brand Section */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
+                <Mic className="w-5 h-5 text-primary" />
+              </div>
+              <span className="text-xl font-bold text-foreground">JanVaani</span>
+            </div>
+            <p className="text-muted-foreground mb-6 max-w-md">
+              Transforming municipal services through voice-based AI technology. Making government services accessible, efficient, and citizen-friendly.
+            </p>
+            
+            {/* Key Features */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Globe className="w-4 h-4 text-primary" />
+                <span>Multi-Language</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Shield className="w-4 h-4 text-primary" />
+                <span>Secure & Private</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Users className="w-4 h-4 text-primary" />
+                <span>Accessibility First</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <FileText className="w-4 h-4 text-primary" />
+                <span>Document Ready</span>
+              </div>
+            </div>
+
+            {/* CTA Button */}
+            <Link href="/register">
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                Get Started Free
+              </Button>
+            </Link>
+          </div>
+
+          {/* Footer Links */}
+          <div>
+            <h3 className="font-semibold text-foreground mb-4">Product</h3>
+            <ul className="space-y-3">
+              {footerLinks.product.map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-foreground mb-4">Solutions</h3>
+            <ul className="space-y-3">
+              {footerLinks.solutions.map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-foreground mb-4">Support</h3>
+            <ul className="space-y-3">
+              {footerLinks.support.map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
-        <div className="flex flex-col justify-start items-start gap-3">
-          <h3 className="text-muted-foreground text-sm font-medium leading-5">Company</h3>
-          <div className="flex flex-col justify-center items-start gap-2">
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              About us
-            </a>
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              Our team
-            </a>
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              Careers
-            </a>
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              Brand
-            </a>
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              Contact
-            </a>
+
+        {/* Bottom Section */}
+        <div className="pt-8 border-t border-border/50">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            {/* Copyright */}
+            <div className="text-sm text-muted-foreground">
+              © 2024 Janvaani. All rights reserved.
+            </div>
+
+            {/* Social Links */}
+            <div className="flex items-center gap-4">
+              {socialLinks.map((social) => (
+                <Link
+                  key={social.name}
+                  href={social.href}
+                  className="w-8 h-8 bg-muted rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
+                  aria-label={social.name}
+                >
+                  {social.icon}
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="flex flex-col justify-start items-start gap-3">
-          <h3 className="text-muted-foreground text-sm font-medium leading-5">Resources</h3>
-          <div className="flex flex-col justify-center items-start gap-2">
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              Terms of use
-            </a>
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              API Reference
-            </a>
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              Documentation
-            </a>
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              Community
-            </a>
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
-              Support
-            </a>
+
+          {/* Additional Info */}
+          <div className="mt-6 pt-6 border-t border-border/30">
+            <div className="flex flex-wrap justify-center gap-6 text-xs text-muted-foreground">
+              <Link href="#privacy" className="hover:text-foreground transition-colors">
+                Privacy Policy
+              </Link>
+              <Link href="#terms" className="hover:text-foreground transition-colors">
+                Terms of Service
+              </Link>
+              <Link href="#cookies" className="hover:text-foreground transition-colors">
+                Cookie Policy
+              </Link>
+              <Link href="#accessibility" className="hover:text-foreground transition-colors">
+                Accessibility
+              </Link>
+              <span className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                GDPR Compliant
+              </span>
+            </div>
           </div>
         </div>
       </div>
