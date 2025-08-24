@@ -10,21 +10,25 @@ import dynamic from 'next/dynamic'
 import { config } from '@/lib/config'
 import { useUser } from '@/contexts/user-context'
 
-// Dynamically import Chart.js components
+// Dynamically import Chart.js components to avoid SSR issues
 const Chart = dynamic(() => import('react-chartjs-2').then((mod) => mod.Chart), {
   ssr: false,
+  loading: () => <div className="animate-pulse bg-muted h-8 w-8 rounded"></div>
 })
 
 const Bar = dynamic(() => import('react-chartjs-2').then((mod) => mod.Bar), {
   ssr: false,
+  loading: () => <div className="animate-pulse bg-muted h-64 w-full rounded"></div>
 })
 
 const Doughnut = dynamic(() => import('react-chartjs-2').then((mod) => mod.Doughnut), {
   ssr: false,
+  loading: () => <div className="animate-pulse bg-muted h-64 w-64 rounded-full mx-auto"></div>
 })
 
 const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), {
   ssr: false,
+  loading: () => <div className="animate-pulse bg-muted h-64 w-full rounded"></div>
 })
 
 // Dynamically import interactive map
@@ -167,33 +171,81 @@ const MunicipalMap = () => {
   const fetchData = async () => {
     try {
       const token = getAuthToken()
-      if (!token) {
-        // Use mock data
-        setGrievances(mockGrievances)
-        setCategories(mockCategories)
-        calculateStats(mockGrievances)
-        return
+      
+      // Fetch both categories and map data
+      const requests = []
+      
+      // Add categories request
+      if (token) {
+        requests.push(
+          fetch(`${config.api.backendUrl}/grievances/categories`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          })
+        )
       }
-
-      const [categoriesResponse] = await Promise.all([
-        fetch(`${config.api.baseUrl}/api/grievances/categories`, {
-          headers: {
+      
+      // Add map data request
+      requests.push(
+        fetch('/api/grievances/map-data', {
+          headers: token ? {
             'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          } : {
             'Content-Type': 'application/json',
           },
         })
-      ])
+      )
 
-      if (categoriesResponse.ok) {
-        const categoriesData = await categoriesResponse.json()
+      const responses = await Promise.all(requests)
+      
+      // Handle categories response
+      if (token && responses[0]?.ok) {
+        const categoriesData = await responses[0].json()
         setCategories(categoriesData.categories || mockCategories)
       } else {
         setCategories(mockCategories)
       }
 
-      // For now, use mock grievance data as we don't have the actual API
-      setGrievances(mockGrievances)
-      calculateStats(mockGrievances)
+      // Handle map data response
+      const mapDataResponse = token ? responses[1] : responses[0]
+      if (mapDataResponse?.ok) {
+        const mapData = await mapDataResponse.json()
+        if (mapData.success && mapData.grievances) {
+          // Transform backend data to frontend format
+          const transformedGrievances = mapData.grievances.map((g: any) => ({
+            id: g.id,
+            title: g.title,
+            category: g.category,
+            categoryName: mockCategories.find(cat => cat.id === g.category)?.name || g.category.replace('_', ' '),
+            status: g.status.replace('_', '-') as 'pending' | 'in-progress' | 'resolved' | 'rejected',
+            priority: g.priority as 'low' | 'medium' | 'high' | 'urgent',
+            location: {
+              address: g.location || g.address || 'No address provided',
+              coordinates: {
+                lat: g.coordinates ? g.coordinates[0] : 23.2599,
+                lng: g.coordinates ? g.coordinates[1] : 77.4126
+              },
+              ward: g.ward_number ? parseInt(g.ward_number) : undefined
+            },
+            createdAt: g.created_at,
+            resolvedAt: g.status === 'resolved' ? g.created_at : undefined
+          }))
+          
+          setGrievances(transformedGrievances)
+          calculateStats(transformedGrievances)
+        } else {
+          // Fallback to mock data
+          setGrievances(mockGrievances)
+          calculateStats(mockGrievances)
+        }
+      } else {
+        // Fallback to mock data
+        setGrievances(mockGrievances)
+        calculateStats(mockGrievances)
+      }
     } catch (error) {
       console.error('Error fetching data:', error)
       setGrievances(mockGrievances)
@@ -377,7 +429,7 @@ const MunicipalMap = () => {
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem key="all" value="all">All Categories</SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}
@@ -391,10 +443,10 @@ const MunicipalMap = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7">7 Days</SelectItem>
-              <SelectItem value="30">30 Days</SelectItem>
-              <SelectItem value="90">90 Days</SelectItem>
-              <SelectItem value="365">1 Year</SelectItem>
+              <SelectItem key="7" value="7">7 Days</SelectItem>
+              <SelectItem key="30" value="30">30 Days</SelectItem>
+              <SelectItem key="90" value="90">90 Days</SelectItem>
+              <SelectItem key="365" value="365">1 Year</SelectItem>
             </SelectContent>
           </Select>
         </div>

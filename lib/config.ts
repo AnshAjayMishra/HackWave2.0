@@ -2,7 +2,8 @@
 export const config = {
   // API Configuration
   api: {
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001', // Frontend API routes
+    backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:3000', // Backend FastAPI
     timeout: 10000,
   },
   
@@ -37,8 +38,11 @@ export const config = {
   
   // Twilio Configuration (for development mode fallback)
   twilio: {
-    developmentMode: process.env.NODE_ENV === 'development' || process.env.DEVELOPMENT_MODE === 'true',
-    devOtp: '123456', // Default OTP for development
+    developmentMode: process.env.DEVELOPMENT_MODE === 'true',
+    devOtp: process.env.DEV_OTP || '123456', // Default OTP for development
+    accountSid: process.env.TWILIO_ACCOUNT_SID,
+    authToken: process.env.TWILIO_AUTH_TOKEN,
+    phoneNumber: process.env.TWILIO_PHONE_NUMBER,
   },
   
   // Map Configuration
@@ -91,6 +95,15 @@ export const config = {
     enableMockData: process.env.NODE_ENV === 'development',
     enableLogging: process.env.NODE_ENV === 'development',
     enableAnalytics: process.env.NODE_ENV === 'production',
+    enableMockPayments: process.env.DEVELOPMENT_MODE === 'true',
+  },
+  
+  // Payment Configuration
+  payment: {
+    razorpay: {
+      keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
+      mockMode: process.env.DEVELOPMENT_MODE === 'true',
+    },
   },
 } as const
 

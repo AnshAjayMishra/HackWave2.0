@@ -12,8 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Plus, Search, Download, FileText, Calendar, User, AlertCircle, CheckCircle, Clock, Eye } from 'lucide-react'
-import { config } from '@/lib/config'
+import { Plus, Search, Filter, MapPin, Calendar, User, AlertCircle, CheckCircle, Clock, XCircle, FileText, Eye, Download } from 'lucide-react'
+import dynamic from 'next/dynamic'
+
+// Dynamically import payment component to avoid SSR issues
+const CertificateWithPayment = dynamic(() => import('./certificate-with-payment'), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center p-8">Loading payment component...</div>
+})
 
 interface CertificateType {
   type: string
@@ -65,6 +71,11 @@ export default function CertificateManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [selectedCertType, setSelectedCertType] = useState('')
   const [requirements, setRequirements] = useState<string[]>([])
+  
+  // Payment workflow states
+  const [showPaymentFlow, setShowPaymentFlow] = useState(false)
+  const [paymentApplicationData, setPaymentApplicationData] = useState<any>(null)
+  const [selectedCertTypeForPayment, setSelectedCertTypeForPayment] = useState<CertificateType | null>(null)
 
   // Form state for different certificate types
   const [birthFormData, setBirthFormData] = useState({
@@ -244,43 +255,70 @@ export default function CertificateManagement() {
           throw new Error('Invalid certificate type')
       }
 
-      // Mock submission - in real implementation this would call the certificates API
-      console.log('Submitting certificate application:', {
-        type: selectedCertType,
-        data: formData
-      })
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      setSuccess('Certificate application submitted successfully!')
+      // Find the certificate type for payment flow
+      const certType = certificateTypes.find(ct => ct.type === selectedCertType)
+      if (!certType) {
+        throw new Error('Certificate type not found')
+      }
+
+      // Set up payment flow
+      setPaymentApplicationData(formData)
+      setSelectedCertTypeForPayment(certType)
       setIsCreateDialogOpen(false)
+      setShowPaymentFlow(true)
       
-      // Reset forms
-      setBirthFormData({
-        child_name: '', date_of_birth: '', place_of_birth: '', father_name: '',
-        mother_name: '', father_occupation: '', mother_occupation: '',
-        permanent_address: '', hospital_name: '', documents: []
-      })
-      setDeathFormData({
-        deceased_name: '', date_of_death: '', place_of_death: '', cause_of_death: '',
-        father_husband_name: '', permanent_address: '', age_at_death: '',
-        gender: '', hospital_name: '', documents: []
-      })
-      setMarriageFormData({
-        groom_name: '', bride_name: '', date_of_marriage: '', place_of_marriage: '',
-        groom_father_name: '', bride_father_name: '', groom_age: '', bride_age: '',
-        groom_address: '', bride_address: '', witness1_name: '', witness2_name: '', documents: []
-      })
-      setSelectedCertType('')
-      
-      fetchApplications() // Refresh the list
     } catch (error) {
-      setError('Error submitting application')
+      setError('Error preparing application')
       console.error('Error:', error)
     } finally {
       setCreating(false)
     }
+  }
+
+  // Handle payment completion
+  const handlePaymentComplete = (applicationId: string, paymentData: any) => {
+    console.log('Payment completed for application:', applicationId, paymentData)
+    
+    // Add new application to the list
+    const newApplication: CertificateApplication = {
+      id: Date.now().toString(),
+      application_id: applicationId,
+      certificate_type: selectedCertTypeForPayment?.type || '',
+      status: 'processing',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      data: paymentApplicationData,
+      documents: []
+    }
+    
+    setApplications(prev => [newApplication, ...prev])
+    setSuccess('Certificate application submitted and payment completed successfully!')
+    
+    // Reset payment flow
+    setShowPaymentFlow(false)
+    setPaymentApplicationData(null)
+    setSelectedCertTypeForPayment(null)
+    resetForms()
+  }
+
+  // Reset all forms
+  const resetForms = () => {
+    setBirthFormData({
+      child_name: '', date_of_birth: '', place_of_birth: '', father_name: '',
+      mother_name: '', father_occupation: '', mother_occupation: '',
+      permanent_address: '', hospital_name: '', documents: []
+    })
+    setDeathFormData({
+      deceased_name: '', date_of_death: '', place_of_death: '', cause_of_death: '',
+      father_husband_name: '', permanent_address: '', age_at_death: '',
+      gender: '', hospital_name: '', documents: []
+    })
+    setMarriageFormData({
+      groom_name: '', bride_name: '', date_of_marriage: '', place_of_marriage: '',
+      groom_father_name: '', bride_father_name: '', groom_age: '', bride_age: '',
+      groom_address: '', bride_address: '', witness1_name: '', witness2_name: '', documents: []
+    })
+    setSelectedCertType('')
   }
 
   const filteredApplications = applications.filter(app => {
@@ -300,6 +338,31 @@ export default function CertificateManagement() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  // Show payment flow when triggered
+  if (showPaymentFlow && selectedCertTypeForPayment && paymentApplicationData) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold">Certificate Payment</h2>
+            <p className="text-muted-foreground">Complete payment for your certificate application</p>
+          </div>
+        </div>
+        
+        <CertificateWithPayment
+          certificateType={selectedCertTypeForPayment}
+          applicationData={paymentApplicationData}
+          onApplicationComplete={handlePaymentComplete}
+          onCancel={() => {
+            setShowPaymentFlow(false)
+            setPaymentApplicationData(null)
+            setSelectedCertTypeForPayment(null)
+          }}
+        />
       </div>
     )
   }

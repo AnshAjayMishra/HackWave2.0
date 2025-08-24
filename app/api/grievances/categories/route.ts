@@ -1,10 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { config } from '@/lib/config';
+import { NextRequest, NextResponse } from 'next/server'
+
+// Configuration - inline to avoid module import issues
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 
 export async function GET(req: NextRequest) {
   try {
     // Call FastAPI backend to get grievance categories (public endpoint)
-    const backendRes = await fetch(`${config.api.baseUrl}/api/grievances/categories`, {
+    const backendRes = await fetch(`${BACKEND_URL}/api/grievances/categories`, {
       method: 'GET',
     });
 

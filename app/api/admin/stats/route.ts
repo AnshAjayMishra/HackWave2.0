@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { config } from '@/lib/config';
+import { NextRequest, NextResponse } from 'next/server'
+
+// Configuration - inline to avoid module import issues
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,7 +16,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Call the backend admin stats endpoint
-    const backendRes = await fetch(`${config.api.baseUrl}/api/grievances/admin/stats`, {
+    const backendRes = await fetch(`${BACKEND_URL}/api/grievances/admin/stats`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import MunicipalMap from "@/components/municipal-map"
 import { 
   BarChart3, 
   TrendingUp, 
@@ -27,7 +28,7 @@ import {
   Info
 } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, ComposedChart } from 'recharts'
-import { adminData, getHeatmapColor, getStatusColor, getPriorityColor } from '@/lib/admin-data'
+import { adminData, getStatusColor, getPriorityColor } from '@/lib/admin-data'
 
 export default function AdminPanel() {
   const [selectedPeriod, setSelectedPeriod] = useState("7d")
@@ -124,7 +125,7 @@ export default function AdminPanel() {
         <Tabs defaultValue="analytics" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="heatmap">Heatmap</TabsTrigger>
+            <TabsTrigger value="heatmap">Municipal Map</TabsTrigger>
             <TabsTrigger value="data">Data Insights</TabsTrigger>
             <TabsTrigger value="seo">SEO & Performance</TabsTrigger>
             <TabsTrigger value="errors">Error Analysis</TabsTrigger>
@@ -226,66 +227,9 @@ export default function AdminPanel() {
             </div>
           </TabsContent>
 
-          {/* Heatmap Tab */}
+          {/* Municipal Map Tab */}
           <TabsContent value="heatmap" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>User Activity Heatmap</CardTitle>
-                <CardDescription>User activity patterns by hour and day of the week</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Day Labels */}
-                  <div className="flex justify-end space-x-2">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                      <div key={day} className="w-12 text-center text-sm font-medium text-muted-foreground">
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Heatmap Grid */}
-                  <div className="grid grid-cols-7 gap-1">
-                    {Array.from({ length: 24 }, (_, hour) => (
-                      <div key={hour} className="space-y-1">
-                        <div className="text-xs text-muted-foreground text-center h-6 flex items-center justify-center">
-                          {hour.toString().padStart(2, '0')}:00
-                        </div>
-                        {Array.from({ length: 7 }, (_, dayIndex) => {
-                          const day = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][dayIndex]
-                          const dataPoint = adminData.heatmapData.find(d => d.hour === hour && d.day === day)
-                          const value = dataPoint?.value || 0
-                          return (
-                            <div
-                              key={`${hour}-${day}`}
-                              className={`w-12 h-8 rounded ${getHeatmapColor(value)} flex items-center justify-center text-xs font-medium transition-colors hover:scale-110 cursor-pointer`}
-                              title={`${day} ${hour.toString().padStart(2, '0')}:00 - ${value} users`}
-                            >
-                              {value > 100 ? Math.round(value / 10) : value}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Legend */}
-                  <div className="flex items-center justify-center space-x-4 mt-6">
-                    <span className="text-sm text-muted-foreground">Activity Level:</span>
-                    <div className="flex space-x-1">
-                      {[0, 50, 100, 150, 200].map((value) => (
-                        <div
-                          key={value}
-                          className={`w-6 h-4 rounded ${getHeatmapColor(value)} flex items-center justify-center text-xs`}
-                        >
-                          {value > 100 ? Math.round(value / 10) : value}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <MunicipalMap />
           </TabsContent>
 
           {/* Data Insights Tab */}

@@ -63,7 +63,7 @@ export default function DashboardPage() {
         if (!token) return;
 
         // Fetch admin stats
-        const statsResponse = await fetch('/api/admin/stats', {
+        const statsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:3000'}/admin/stats`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ export default function DashboardPage() {
         }
 
         // Fetch recent grievances
-        const grievancesResponse = await fetch('/api/admin/grievances?limit=5', {
+        const grievancesResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:3000'}/admin/grievances?limit=5`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',

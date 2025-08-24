@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeft, Shield } from "lucide-react"
 import Link from "next/link"
 
-export default function VerifyOTPPage() {
+function VerifyOTPContent() {
   const [otp, setOtp] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -107,5 +107,20 @@ export default function VerifyOTPPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function VerifyOTPPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    }>
+      <VerifyOTPContent />
+    </Suspense>
   )
 }

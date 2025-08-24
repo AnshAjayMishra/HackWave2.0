@@ -77,7 +77,7 @@ export default function InteractiveMap({ grievances, categories }: InteractiveMa
     mapInstanceRef.current = map
 
     // Add markers for grievances
-    grievances.forEach((grievance) => {
+    grievances.forEach((grievance, index) => {
       if (grievance.coordinates) {
         const color = categoryColors[grievance.category as keyof typeof categoryColors] || '#6b7280'
         const icon = createCustomIcon(color, grievance.priority)
@@ -125,8 +125,7 @@ export default function InteractiveMap({ grievances, categories }: InteractiveMa
   return (
     <div 
       ref={mapRef} 
-      className="w-full h-full rounded-lg overflow-hidden"
-      style={{ minHeight: '400px' }}
+      className="w-full h-full rounded-lg overflow-hidden min-h-[400px]"
     />
   )
 }

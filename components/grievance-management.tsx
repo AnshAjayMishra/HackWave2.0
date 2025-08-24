@@ -95,6 +95,39 @@ const GrievanceManagement = () => {
     }
   })
 
+  // Helper functions for category mapping
+  const getCategoryIcon = (categoryValue: string): string => {
+    const iconMap: { [key: string]: string } = {
+      'garbage': '🗑️',
+      'water_supply': '💧',
+      'drainage': '🚰',
+      'street_lights': '💡',
+      'roads': '🛣️',
+      'sewage': '🚿',
+      'noise_pollution': '🔊',
+      'illegal_construction': '🏗️',
+      'property_tax': '🏠',
+      'other': '📝'
+    }
+    return iconMap[categoryValue] || '📝'
+  }
+
+  const getCategoryColor = (categoryValue: string): string => {
+    const colorMap: { [key: string]: string } = {
+      'garbage': 'green',
+      'water_supply': 'blue',
+      'drainage': 'cyan',
+      'street_lights': 'yellow',
+      'roads': 'orange',
+      'sewage': 'purple',
+      'noise_pollution': 'red',
+      'illegal_construction': 'gray',
+      'property_tax': 'brown',
+      'other': 'slate'
+    }
+    return colorMap[categoryValue] || 'gray'
+  }
+
   // Mock data for development
   const mockCategories: GrievanceCategory[] = [
     { id: '1', name: 'Water Supply', description: 'Water related issues', icon: '💧', color: 'blue' },
@@ -160,7 +193,7 @@ const GrievanceManagement = () => {
         return
       }
 
-      const response = await fetch(`${config.api.baseUrl}/api/grievances/categories`, {
+      const response = await fetch(`${config.api.backendUrl}/grievances/categories`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -169,7 +202,16 @@ const GrievanceManagement = () => {
 
       if (response.ok) {
         const data = await response.json()
-        setCategories(data.categories || mockCategories)
+        // Transform backend categories to frontend format
+        const transformedCategories = data.categories ? data.categories.map((cat: any) => ({
+          id: cat.value,
+          name: cat.label,
+          description: `${cat.label} related issues`,
+          icon: getCategoryIcon(cat.value),
+          color: getCategoryColor(cat.value)
+        })) : mockCategories
+        
+        setCategories(transformedCategories)
       } else {
         console.warn('Failed to fetch categories, using mock data')
         setCategories(mockCategories)
@@ -190,7 +232,7 @@ const GrievanceManagement = () => {
         return
       }
 
-      const response = await fetch(`${config.api.baseUrl}/api/grievances/my-grievances`, {
+      const response = await fetch(`${config.api.backendUrl}/grievances/my-grievances`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -242,24 +284,50 @@ const GrievanceManagement = () => {
         return
       }
 
-      const response = await fetch(`${config.api.baseUrl}/api/grievances/create`, {
+      // Transform frontend data structure to match backend expectations
+      const backendPayload = {
+        title: createForm.title,
+        description: createForm.description,
+        category: createForm.category,
+        priority: createForm.priority,
+        location: createForm.location.address, // Flatten the location object to string
+        address: createForm.location.address,  // Also include as address field
+        // Add other fields that backend might expect
+        ward_number: null,
+        pin_code: null,
+        contact_person: user?.name || null,
+        alternate_mobile: null,
+        anonymous: false
+      }
+
+      console.log('Sending grievance payload:', backendPayload)
+
+      const response = await fetch(`${config.api.backendUrl}/grievances/create`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(createForm)
+        body: JSON.stringify(backendPayload)
       })
 
+      console.log('Grievance creation response:', response.status, response.statusText)
+
       if (response.ok) {
+        const result = await response.json()
+        console.log('Grievance created successfully:', result)
         await fetchGrievances() // Refresh the list
         setIsCreateDialogOpen(false)
         resetCreateForm()
       } else {
-        console.error('Failed to create grievance')
+        const errorData = await response.text()
+        console.error('Failed to create grievance:', response.status, errorData)
+        // Show user-friendly error message
+        alert(`Failed to create grievance: ${response.status} ${response.statusText}`)
       }
     } catch (error) {
       console.error('Error creating grievance:', error)
+      alert('Network error while creating grievance. Please try again.')
     } finally {
       setCreateLoading(false)
     }
@@ -395,6 +463,7 @@ const GrievanceManagement = () => {
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem key="all" value="all">All Categories</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         <span className="flex items-center gap-2">
@@ -414,10 +483,10 @@ const GrievanceManagement = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="urgent">Urgent</SelectItem>
+                    <SelectItem key="priority-low" value="low">Low</SelectItem>
+                    <SelectItem key="priority-medium" value="medium">Medium</SelectItem>
+                    <SelectItem key="priority-high" value="high">High</SelectItem>
+                    <SelectItem key="priority-urgent" value="urgent">Urgent</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -493,9 +562,9 @@ const GrievanceManagement = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem key="all-categories" value="all">All Categories</SelectItem>
                   {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
+                    <SelectItem key={`category-${category.id}`} value={category.id}>
                       {category.name}
                     </SelectItem>
                   ))}
@@ -510,11 +579,11 @@ const GrievanceManagement = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="resolved">Resolved</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem key="all-status" value="all">All Status</SelectItem>
+                  <SelectItem key="pending" value="pending">Pending</SelectItem>
+                  <SelectItem key="in-progress" value="in-progress">In Progress</SelectItem>
+                  <SelectItem key="resolved" value="resolved">Resolved</SelectItem>
+                  <SelectItem key="rejected" value="rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -526,11 +595,11 @@ const GrievanceManagement = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Priorities</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
+                  <SelectItem key="all-priorities" value="all">All Priorities</SelectItem>
+                  <SelectItem key="low" value="low">Low</SelectItem>
+                  <SelectItem key="medium" value="medium">Medium</SelectItem>
+                  <SelectItem key="high" value="high">High</SelectItem>
+                  <SelectItem key="urgent" value="urgent">Urgent</SelectItem>
                 </SelectContent>
               </Select>
             </div>

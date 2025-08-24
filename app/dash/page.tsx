@@ -9,14 +9,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Link from 'next/link'
 import { Settings, BarChart3, MapPin, FileText, AlertCircle, Users, TrendingUp, Clock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import GrievanceManagement from '@/components/grievance-management'
 import CertificateManagement from '@/components/certificate-management'
-import MunicipalMap from '@/components/municipal-map'
+import RevenueManagement from '@/components/revenue-management'
+import RazorpayTester from '@/components/razorpay-tester'
 
 export default function DashboardPage() {
   const { user, isLoading, logout } = useUser()
   const router = useRouter()
+  const [activeTab, setActiveTab] = useState('overview')
 
   useEffect(() => {
     // If not loading and no user, redirect to login
@@ -133,8 +135,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full lg:w-auto grid-cols-2 lg:grid-cols-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full lg:w-auto grid-cols-3 lg:grid-cols-5">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Overview
@@ -147,9 +149,13 @@ export default function DashboardPage() {
               <FileText className="h-4 w-4" />
               Certificates
             </TabsTrigger>
-            <TabsTrigger value="map" className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Municipal Map
+            <TabsTrigger value="revenue" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Bills & Payments
+            </TabsTrigger>
+            <TabsTrigger value="testing" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Testing
             </TabsTrigger>
           </TabsList>
 
@@ -259,25 +265,41 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
+                  <Button 
+                    variant="outline" 
+                    className="h-auto p-4 flex flex-col items-center space-y-2"
+                    onClick={() => setActiveTab('grievances')}
+                  >
                     <AlertCircle className="h-6 w-6 text-orange-500" />
                     <span className="text-sm font-medium">Report Issue</span>
                     <span className="text-xs text-muted-foreground text-center">Submit a new grievance</span>
                   </Button>
                   
-                  <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
+                  <Button 
+                    variant="outline" 
+                    className="h-auto p-4 flex flex-col items-center space-y-2"
+                    onClick={() => setActiveTab('certificates')}
+                  >
                     <FileText className="h-6 w-6 text-blue-500" />
                     <span className="text-sm font-medium">Apply Certificate</span>
                     <span className="text-xs text-muted-foreground text-center">Birth, Death, Marriage</span>
                   </Button>
                   
-                  <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
-                    <MapPin className="h-6 w-6 text-green-500" />
-                    <span className="text-sm font-medium">View Map</span>
-                    <span className="text-xs text-muted-foreground text-center">Municipal services map</span>
+                  <Button 
+                    variant="outline" 
+                    className="h-auto p-4 flex flex-col items-center space-y-2"
+                    onClick={() => setActiveTab('revenue')}
+                  >
+                    <TrendingUp className="h-6 w-6 text-green-500" />
+                    <span className="text-sm font-medium">Pay Bills</span>
+                    <span className="text-xs text-muted-foreground text-center">Bills and payments</span>
                   </Button>
                   
-                  <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
+                  <Button 
+                    variant="outline" 
+                    className="h-auto p-4 flex flex-col items-center space-y-2"
+                    onClick={() => setActiveTab('overview')}
+                  >
                     <BarChart3 className="h-6 w-6 text-purple-500" />
                     <span className="text-sm font-medium">Analytics</span>
                     <span className="text-xs text-muted-foreground text-center">View service statistics</span>
@@ -297,9 +319,27 @@ export default function DashboardPage() {
             <CertificateManagement />
           </TabsContent>
 
-          {/* Municipal Map Tab */}
-          <TabsContent value="map">
-            <MunicipalMap />
+          {/* Revenue & Bills Tab */}
+          <TabsContent value="revenue">
+            <RevenueManagement />
+          </TabsContent>
+
+          {/* Testing Tab */}
+          <TabsContent value="testing" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Payment System Testing
+                </CardTitle>
+                <CardDescription>
+                  Test both mock and real Razorpay payment integration.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RazorpayTester />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

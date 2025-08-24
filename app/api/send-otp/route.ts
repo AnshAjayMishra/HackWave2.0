@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // Configuration - inline to avoid module import issues
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'port { NextRequest, NextResponse } from 'next/server';
-import { config } from '@/lib/config';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 
 export async function POST(req: NextRequest) {
   try {
     const { mobile } = await req.json();
 
     // Call your FastAPI backend
-    const backendRes = await fetch(`${config.api.baseUrl}/api/auth/send-otp?mobile=${encodeURIComponent(mobile)}`, {
+    const backendRes = await fetch(`${BACKEND_URL}/api/auth/send-otp?mobile=${encodeURIComponent(mobile)}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

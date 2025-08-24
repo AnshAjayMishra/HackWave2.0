@@ -8,12 +8,9 @@ export function middleware(request: NextRequest) {
   // we cannot check authentication in middleware (server-side)
   // Instead, let each page handle its own authentication
   
-  // Only handle public route redirections that don't require auth checks
-  
-  // If user is on root path, redirect to login
-  if (pathname === '/') {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
+  // REMOVED: Root path redirect to login - Let the landing page show
+  // The landing page (/) should be accessible to everyone
+  // Users can navigate to login/register from the landing page
   
   return NextResponse.next()
 }
