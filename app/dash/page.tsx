@@ -5,11 +5,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Link from 'next/link'
-import { Settings, BarChart3 } from 'lucide-react'
+import { Settings, BarChart3, MapPin, FileText, AlertCircle, Users, TrendingUp, Clock } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import GrievanceManagement from '@/components/grievance-management'
+import CertificateManagement from '@/components/certificate-management'
+import MunicipalMap from '@/components/municipal-map'
 
 export default function DashboardPage() {
   const { user, isLoading, logout } = useUser()
+  const router = useRouter()
+
+  useEffect(() => {
+    // If not loading and no user, redirect to login
+    if (!isLoading && !user) {
+      router.push('/login')
+    }
+  }, [isLoading, user, router])
 
   if (isLoading) {
     return (
@@ -23,164 +37,272 @@ export default function DashboardPage() {
   }
 
   if (!user) {
-    return null
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Redirecting to login...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      {/* Header */}
-      <header className="bg-card/80 backdrop-blur-sm shadow-sm border-b border-border/50 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-              <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
-                Welcome back!
-              </Badge>
+      <div className="container mx-auto p-6 space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold">Welcome back, {user.name ? user.name.split(' ')[0] : 'User'}!</h1>
+            <p className="text-muted-foreground text-lg">
+              Manage your municipal services and track your applications
+            </p>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-12 w-12">
+              <AvatarImage src="/placeholder-user.jpg" alt="User" />
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              </AvatarFallback>
+            </Avatar>
+            
+            <div className="hidden md:block">
+              <div className="text-sm font-medium">{user.name || 'User'}</div>
+              <div className="text-xs text-muted-foreground">{user.email || user.mobile}</div>
             </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/admin">
-                <Button variant="outline" className="border-border hover:bg-muted">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Admin Panel
-                </Button>
-              </Link>
-              <Avatar>
-                <AvatarImage src="/placeholder-user.jpg" />
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  {user.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <Button variant="outline" onClick={logout} className="border-border hover:bg-muted">
-                Logout
-              </Button>
-            </div>
+            
+            <Button variant="outline" size="sm" onClick={logout}>
+              Logout
+            </Button>
           </div>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Profile Card */}
-          <Card className="bg-card/80 backdrop-blur-sm border-border/50 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-foreground">
-                <span>Profile Information</span>
-                <Badge variant="outline" className="border-primary text-primary">
-                  Active
-                </Badge>
-              </CardTitle>
-              <CardDescription className="text-muted-foreground">
-                Your personal details and account information
-              </CardDescription>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Profile Completion</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src="/placeholder-user.jpg" />
-                  <AvatarFallback className="text-lg bg-primary text-primary-foreground">
-                    {user.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-semibold text-foreground">{user.name}</p>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
-                </div>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Mobile:</span>
-                  <span className="text-foreground">{user.mobile}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">City:</span>
-                  <span className="text-foreground">{user.city}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Gender:</span>
-                  <span className="text-foreground capitalize">{user.gender}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Member since:</span>
-                  <span className="text-foreground">{new Date(user.createdAt).toLocaleDateString()}</span>
-                </div>
-              </div>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">100%</div>
+              <p className="text-xs text-muted-foreground">
+                Your profile is complete
+              </p>
             </CardContent>
           </Card>
-
-          {/* Quick Actions */}
-          <Card className="bg-card/80 backdrop-blur-sm border-border/50 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-foreground">Quick Actions</CardTitle>
-              <CardDescription className="text-muted-foreground">
-                Common tasks and shortcuts
-              </CardDescription>
+          
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Grievances</CardTitle>
+              <AlertCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="space-y-3">
-              <Button className="w-full justify-start border-border hover:bg-muted" variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
-                Edit Profile
-              </Button>
-              <Button className="w-full justify-start border-border hover:bg-muted" variant="outline">
-                <span className="mr-2">🔒</span>
-                Change Password
-              </Button>
-              <Button className="w-full justify-start border-border hover:bg-muted" variant="outline">
-                <span className="mr-2">⚙️</span>
-                Settings
-              </Button>
-              <Link href="/admin" className="w-full">
-                <Button className="w-full justify-start border-border hover:bg-muted" variant="outline">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  View Analytics
-                </Button>
-              </Link>
+            <CardContent>
+              <div className="text-2xl font-bold">2</div>
+              <p className="text-xs text-muted-foreground">
+                +1 from last month
+              </p>
             </CardContent>
           </Card>
-
-          {/* Recent Activity */}
-          <Card className="bg-card/80 backdrop-blur-sm border-border/50 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-foreground">Recent Activity</CardTitle>
-              <CardDescription className="text-muted-foreground">
-                Your latest actions and updates
-              </CardDescription>
+          
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Certificate Applications</CardTitle>
+              <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center space-x-3 text-sm">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-foreground">Profile completed successfully</span>
-                <span className="text-muted-foreground text-xs">Just now</span>
-              </div>
-              <div className="flex items-center space-x-3 text-sm">
-                <div className="w-2 h-2 bg-primary rounded-full"></div>
-                <span className="text-foreground">Account created</span>
-                <span className="text-muted-foreground text-xs">Today</span>
-              </div>
-              <div className="flex items-center space-x-3 text-sm">
-                <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
-                <span className="text-foreground">Welcome email sent</span>
-                <span className="text-muted-foreground text-xs">Today</span>
-              </div>
+            <CardContent>
+              <div className="text-2xl font-bold">3</div>
+              <p className="text-xs text-muted-foreground">
+                1 pending approval
+              </p>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Welcome Message */}
-        <div className="mt-8">
-          <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20 shadow-lg">
-            <CardContent className="pt-6">
-              <h2 className="text-xl font-semibold text-primary mb-2">
-                Welcome to your dashboard, {user.name}! 🎉
-              </h2>
-              <p className="text-muted-foreground">
-                Your account has been successfully created. You can now access all the features and manage your profile from this dashboard.
+          
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Response Time</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">5.2</div>
+              <p className="text-xs text-muted-foreground">
+                Average days
               </p>
             </CardContent>
           </Card>
         </div>
-      </main>
+
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full lg:w-auto grid-cols-2 lg:grid-cols-4">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="grievances" className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              Grievances
+            </TabsTrigger>
+            <TabsTrigger value="certificates" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Certificates
+            </TabsTrigger>
+            <TabsTrigger value="map" className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Municipal Map
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* User Profile Card */}
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Profile Information
+                  </CardTitle>
+                  <CardDescription>Your account details and verification status</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center space-x-4">
+                    <Avatar className="h-16 w-16">
+                      <AvatarImage src="/placeholder-user.jpg" alt="User" />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                        {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-1">
+                      <h3 className="font-semibold text-lg">{user.name || 'User Name'}</h3>
+                      <p className="text-sm text-muted-foreground">{user.email || 'email@example.com'}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">{user.mobile}</span>
+                        <Badge variant="secondary" className="text-xs">Verified</Badge>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                    <div>
+                      <p className="text-sm font-medium">Phone Verified</p>
+                      <Badge variant={user.verified ? "default" : "destructive"} className="mt-1">
+                        {user.verified ? "Verified" : "Not Verified"}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Member Since</p>
+                      <span className="text-sm text-muted-foreground">
+                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    Recent Activity
+                  </CardTitle>
+                  <CardDescription>Your latest interactions with municipal services</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Submitted grievance about street lighting</p>
+                        <p className="text-xs text-muted-foreground">2 days ago</p>
+                      </div>
+                      <Badge variant="outline" className="text-xs">Pending</Badge>
+                    </div>
+                    
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Birth certificate application approved</p>
+                        <p className="text-xs text-muted-foreground">1 week ago</p>
+                      </div>
+                      <Badge className="bg-green-500 text-xs">Approved</Badge>
+                    </div>
+                    
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Profile information updated</p>
+                        <p className="text-xs text-muted-foreground">2 weeks ago</p>
+                      </div>
+                      <Badge variant="secondary" className="text-xs">Completed</Badge>
+                    </div>
+                  </div>
+                  
+                  <Button variant="outline" size="sm" className="w-full mt-4">
+                    View All Activity
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Actions */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+                <CardDescription>Common tasks and services you might need</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
+                    <AlertCircle className="h-6 w-6 text-orange-500" />
+                    <span className="text-sm font-medium">Report Issue</span>
+                    <span className="text-xs text-muted-foreground text-center">Submit a new grievance</span>
+                  </Button>
+                  
+                  <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
+                    <FileText className="h-6 w-6 text-blue-500" />
+                    <span className="text-sm font-medium">Apply Certificate</span>
+                    <span className="text-xs text-muted-foreground text-center">Birth, Death, Marriage</span>
+                  </Button>
+                  
+                  <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
+                    <MapPin className="h-6 w-6 text-green-500" />
+                    <span className="text-sm font-medium">View Map</span>
+                    <span className="text-xs text-muted-foreground text-center">Municipal services map</span>
+                  </Button>
+                  
+                  <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
+                    <BarChart3 className="h-6 w-6 text-purple-500" />
+                    <span className="text-sm font-medium">Analytics</span>
+                    <span className="text-xs text-muted-foreground text-center">View service statistics</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Grievances Tab */}
+          <TabsContent value="grievances">
+            <GrievanceManagement />
+          </TabsContent>
+
+          {/* Certificates Tab */}
+          <TabsContent value="certificates">
+            <CertificateManagement />
+          </TabsContent>
+
+          {/* Municipal Map Tab */}
+          <TabsContent value="map">
+            <MunicipalMap />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   )
 } 

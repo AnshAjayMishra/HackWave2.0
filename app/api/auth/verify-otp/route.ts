@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Send OTP for login
+// Verify OTP and complete login
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { mobile } = body
+    const { mobile, otp } = body
 
-    if (!mobile) {
+    if (!mobile || !otp) {
       return NextResponse.json(
-        { error: 'Mobile number is required' },
+        { error: 'Mobile number and OTP are required' },
         { status: 400 }
       )
     }
@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
     // Add +91 prefix for Indian numbers
     formattedMobile = `+91${formattedMobile}`
 
-    // Forward request to backend with mobile as query parameter
-    const backendResponse = await fetch(`http://localhost:3000/api/auth/send-otp?mobile=${encodeURIComponent(formattedMobile)}`, {
+    // Forward request to backend with mobile and otp as query parameters
+    const backendResponse = await fetch(`http://localhost:3000/api/auth/verify-otp?mobile=${encodeURIComponent(formattedMobile)}&otp=${encodeURIComponent(otp)}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -38,22 +38,24 @@ export async function POST(request: NextRequest) {
 
     if (!backendResponse.ok) {
       return NextResponse.json(
-        { error: backendData.error || backendData.detail || 'Failed to send OTP' },
+        { error: backendData.detail || 'OTP verification failed' },
         { status: backendResponse.status }
       )
     }
 
+    // Return success with token
     return NextResponse.json({
       success: true,
-      message: 'OTP sent successfully',
-      data: backendData
+      token: backendData.token,
+      user: backendData.user,
+      message: 'Login successful'
     }, { status: 200 })
 
   } catch (error) {
-    console.error('OTP send error:', error)
+    console.error('OTP verification error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     )
   }
-} 
+}
