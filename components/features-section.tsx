@@ -80,13 +80,7 @@ export function FeaturesSection() {
       badge: "Local",
       color: "from-emerald-500/20 to-green-500/20"
     },
-    {
-      icon: Phone,
-      title: "Seamless Integration",
-      description: "Integrates with existing municipal systems and databases",
-      badge: "Connected",
-      color: "from-violet-500/20 to-purple-500/20"
-    }
+   
   ]
 
   return (

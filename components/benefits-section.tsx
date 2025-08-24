@@ -85,22 +85,37 @@ export function BenefitsSection() {
 
       {/* Visual Divider */}
       <div className="flex justify-center mb-16">
-        <div className="relative">
-          <div className="w-64 h-20 bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 rounded-full flex items-center justify-center">
-            <div className="flex items-center gap-4">
-              <div className="w-8 h-8 bg-primary/30 rounded-full flex items-center justify-center">
-                <Users className="w-4 h-4 text-primary" />
-              </div>
-              <span className="text-sm font-medium text-foreground">Citizens</span>
-              <div className="w-1 h-6 bg-primary/30 rounded-full"></div>
-              <span className="text-sm font-medium text-foreground">Government</span>
-              <div className="w-8 h-8 bg-secondary/30 rounded-full flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 text-secondary" />
-              </div>
-            </div>
+  <div className="relative">
+    {/* Glow / Background Highlight */}
+    <div className="absolute -inset-1 blur-lg bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 rounded-full opacity-50 animate-pulse"></div>
+
+    {/* Main Pill */}
+    <div className="relative w-[420px] h-32 bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 rounded-full shadow-lg ring-1 ring-white/10 backdrop-blur-md transition duration-300 ease-in-out hover:scale-105 hover:shadow-xl">
+      <div className="flex items-center justify-center h-full px-8">
+        <div className="flex items-center gap-6">
+          {/* Left Icon */}
+          <div className="w-10 h-10 bg-primary/30 rounded-full flex items-center justify-center shadow-inner">
+            <Users className="w-5 h-5 text-primary" />
+          </div>
+
+          <span className="text-base font-semibold text-foreground">Citizens</span>
+
+          {/* Divider */}
+          <div className="w-1 h-8 bg-primary/30 rounded-full"></div>
+
+          <span className="text-base font-semibold text-foreground">Government</span>
+
+          {/* Right Icon */}
+          <div className="w-10 h-10 bg-secondary/30 rounded-full flex items-center justify-center shadow-inner">
+            <TrendingUp className="w-5 h-5 text-secondary" />
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+
 
       {/* Citizen Benefits */}
       <div className="mb-16">
