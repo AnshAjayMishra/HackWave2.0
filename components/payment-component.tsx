@@ -11,7 +11,7 @@ import RazorpayService, { PaymentData, ServiceFees } from '@/lib/razorpay'
 import { useUser } from '@/contexts/user-context'
 
 interface PaymentComponentProps {
-  serviceType: 'certificate' | 'grievance' | 'fine' | 'tax'
+  serviceType: 'certificate' | 'grievance' | 'property_tax' | 'water_bill' | 'garbage_fee' | 'fine' | 'other'
   serviceId: string
   amount: number
   title: string
@@ -56,7 +56,7 @@ export default function PaymentComponent({
       const paymentData: PaymentData = {
         amount: feeCalculation.totalAmount * 100, // Convert to paise
         currency: 'INR',
-        receipt: `${serviceType}_${serviceId}_${Date.now()}`,
+        receipt: `${serviceType.slice(0, 8)}_${Date.now().toString().slice(-8)}`, // Keep within 40 chars
         description: `${title} - ${description}`,
         customer: {
           name: user.name || 'Municipal User',
@@ -72,8 +72,29 @@ export default function PaymentComponent({
         }
       }
 
-      // Create Razorpay order
-      const order = await razorpayService.createOrder(paymentData)
+      let order: any
+      let retryCount = 0
+      const maxRetries = 2
+
+      // Retry logic for order creation
+      while (retryCount <= maxRetries) {
+        try {
+          // Create Razorpay order
+          order = await razorpayService.createOrder(paymentData)
+          break // Success, exit retry loop
+        } catch (error: any) {
+          retryCount++
+          console.error(`Payment order creation attempt ${retryCount} failed:`, error)
+          
+          if (retryCount > maxRetries) {
+            // If all retries failed, throw the error
+            throw error
+          }
+          
+          // Wait a bit before retrying (1s, 2s, 3s)
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
+        }
+      }
 
       // Open Razorpay checkout
       razorpayService.openCheckout({

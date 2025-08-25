@@ -9,8 +9,10 @@ export async function GET(request: NextRequest) {
 
     const token = authHeader.substring(7)
     
-    // Forward to backend API
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/revenue/summary`
+    // Forward to backend API - use direct backend URL
+    const backendUrl = 'http://localhost:3000/revenue/summary'
+    console.log('Forwarding revenue summary request to:', backendUrl)
+    
     const response = await fetch(backendUrl, {
       method: 'GET',
       headers: {
@@ -18,6 +20,8 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'application/json',
       },
     })
+
+    console.log('Backend response status:', response.status)
 
     if (!response.ok) {
       // Return mock data if backend is not available

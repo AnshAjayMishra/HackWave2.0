@@ -259,6 +259,24 @@ const GrievanceManagement = () => {
   const createGrievance = async () => {
     try {
       setCreateLoading(true)
+      
+      // Client-side validation
+      if (!createForm.title.trim()) {
+        throw new Error('Title is required')
+      }
+      if (!createForm.description.trim()) {
+        throw new Error('Description is required')
+      }
+      if (createForm.description.trim().length < 10) {
+        throw new Error('Description must be at least 10 characters long')
+      }
+      if (!createForm.category) {
+        throw new Error('Category is required')
+      }
+      if (!createForm.location.address.trim()) {
+        throw new Error('Location is required')
+      }
+      
       const token = getAuthToken()
       
       if (!token) {
@@ -364,9 +382,9 @@ const GrievanceManagement = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(g => 
-        g.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        g.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        g.location.address.toLowerCase().includes(searchTerm.toLowerCase())
+        (g.title && g.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (g.description && g.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (g.location?.address && g.location.address.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     }
 
@@ -492,14 +510,21 @@ const GrievanceManagement = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
+                <Label htmlFor="description">Description * (minimum 10 characters)</Label>
                 <Textarea
                   id="description"
-                  placeholder="Detailed description of the issue..."
+                  placeholder="Detailed description of the issue... (minimum 10 characters)"
                   rows={4}
                   value={createForm.description}
                   onChange={(e) => setCreateForm({...createForm, description: e.target.value})}
+                  className={createForm.description.length > 0 && createForm.description.length < 10 ? 'border-red-500' : ''}
                 />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span className={createForm.description.length < 10 ? 'text-red-500' : 'text-green-600'}>
+                    {createForm.description.length}/10 characters minimum
+                  </span>
+                  <span>{createForm.description.length}/500 characters</span>
+                </div>
               </div>
               
               <div className="space-y-2">
@@ -634,8 +659,8 @@ const GrievanceManagement = () => {
           </Card>
         ) : (
           <div className="grid gap-4">
-            {filteredGrievances.map((grievance) => (
-              <Card key={grievance.id} className="hover:shadow-lg transition-shadow">
+            {filteredGrievances.map((grievance, index) => (
+              <Card key={grievance.id || `grievance-${index}`} className="hover:shadow-lg transition-shadow">
                 <CardContent className="pt-6">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex-1">
@@ -649,15 +674,15 @@ const GrievanceManagement = () => {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          {new Date(grievance.createdAt).toLocaleDateString()}
+                          {grievance.createdAt ? new Date(grievance.createdAt).toLocaleDateString() : 'N/A'}
                         </span>
                         <span className="flex items-center gap-1">
                           <MapPin className="h-4 w-4" />
-                          {grievance.location.address}
+                          {typeof grievance.location === 'string' ? grievance.location : grievance.location?.address || 'N/A'}
                         </span>
                         <span className="flex items-center gap-1">
                           <User className="h-4 w-4" />
-                          {grievance.categoryName}
+                          {grievance.categoryName || grievance.category}
                         </span>
                       </div>
                     </div>

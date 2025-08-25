@@ -29,6 +29,7 @@ import {
 } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, ComposedChart } from 'recharts'
 import { adminData, getStatusColor, getPriorityColor } from '@/lib/admin-data'
+import { FooterSection } from '@/components/footer-section'
 
 export default function AdminPanel() {
   const [selectedPeriod, setSelectedPeriod] = useState("7d")
@@ -36,86 +37,140 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card border-b border-border/50 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Janvaani Admin Panel</h1>
-              <p className="text-muted-foreground">Voice AI Assistant Analytics & Insights</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="24h">Last 24h</SelectItem>
-                  <SelectItem value="7d">Last 7 days</SelectItem>
-                  <SelectItem value="30d">Last 30 days</SelectItem>
-                  <SelectItem value="90d">Last 90 days</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
+      {/* Enhanced Header */}
+      <header className="border-b border-border/20 sticky top-0 z-40 backdrop-blur-sm">
+        {/* Background Effects */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-background to-primary/5"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-32 bg-gradient-to-r from-primary/10 to-transparent rounded-full blur-3xl"></div>
+        
+        <div className="relative bg-background/80 backdrop-blur-md">
+          <div className="max-w-7xl mx-auto px-6 py-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-8 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
+                    <div className="w-1.5 h-6 bg-gradient-to-b from-primary/70 to-primary/30 rounded-full"></div>
+                  </div>
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                    Janvaani Admin Panel
+                  </h1>
+                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                    AI Powered
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground text-lg font-medium ml-6">
+                  Voice AI Assistant Analytics & Insights
+                </p>
+                
+                {/* Status Indicators */}
+                <div className="flex items-center gap-4 ml-6 mt-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-muted-foreground">AI System Active</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-muted-foreground">Real-time Data</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="bg-muted/30 rounded-xl p-3 border border-border/50">
+                  <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                    <SelectTrigger className="w-32 border-0 bg-background/50">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="24h">Last 24h</SelectItem>
+                      <SelectItem value="7d">Last 7 days</SelectItem>
+                      <SelectItem value="30d">Last 30 days</SelectItem>
+                      <SelectItem value="90d">Last 90 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="bg-background/50 backdrop-blur-sm border-border/50 hover:bg-primary/10 hover:border-primary/30 transition-all duration-200 shadow-sm"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Key Metrics */}
+        {/* Enhanced Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+          <Card className="group hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 border-0 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 rounded-full blur-2xl"></div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
+              <CardTitle className="text-sm font-semibold text-blue-700 dark:text-blue-300">Total Users</CardTitle>
+              <div className="p-2 bg-blue-500/10 rounded-lg">
+                <Users className="h-4 w-4 text-blue-600" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">12,847</div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-green-600">+12.5%</span> from last month
+            <CardContent className="relative">
+              <div className="text-3xl font-bold text-blue-600 mb-1">12,847</div>
+              <p className="text-xs text-blue-600/70 font-medium">
+                <span className="text-green-600 font-semibold">+12.5%</span> from last month
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Voice Requests</CardTitle>
-              <Mic className="h-4 w-4 text-muted-foreground" />
+          <Card className="group hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 border-0 bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500/10 to-violet-500/10 rounded-full blur-2xl"></div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
+              <CardTitle className="text-sm font-semibold text-purple-700 dark:text-purple-300">Voice Requests</CardTitle>
+              <div className="p-2 bg-purple-500/10 rounded-lg">
+                <Mic className="h-4 w-4 text-purple-600" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">89,234</div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-green-600">+8.2%</span> from last month
+            <CardContent className="relative">
+              <div className="text-3xl font-bold text-purple-600 mb-1">89,234</div>
+              <p className="text-xs text-purple-600/70 font-medium">
+                <span className="text-green-600 font-semibold">+8.2%</span> from last month
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          <Card className="group hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 border-0 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-full blur-2xl"></div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
+              <CardTitle className="text-sm font-semibold text-green-700 dark:text-green-300">Success Rate</CardTitle>
+              <div className="p-2 bg-green-500/10 rounded-lg">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">94.2%</div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-green-600">+2.1%</span> from last month
+            <CardContent className="relative">
+              <div className="text-3xl font-bold text-green-600 mb-1">94.2%</div>
+              <p className="text-xs text-green-600/70 font-medium">
+                <span className="text-green-600 font-semibold">+2.1%</span> from last month
               </p>
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-green-500/20 rounded-full">
+                <div className="w-[94%] h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"></div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+          <Card className="group hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 border-0 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-500/10 to-amber-500/10 rounded-full blur-2xl"></div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
+              <CardTitle className="text-sm font-semibold text-orange-700 dark:text-orange-300">Avg Response Time</CardTitle>
+              <div className="p-2 bg-orange-500/10 rounded-lg">
+                <Clock className="h-4 w-4 text-orange-600" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1.2s</div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-red-600">+0.3s</span> from last month
+            <CardContent className="relative">
+              <div className="text-3xl font-bold text-orange-600 mb-1">1.2s</div>
+              <p className="text-xs text-orange-600/70 font-medium">
+                <span className="text-red-600 font-semibold">+0.3s</span> from last month
               </p>
             </CardContent>
           </Card>
@@ -395,6 +450,7 @@ export default function AdminPanel() {
           </TabsContent>
         </Tabs>
       </main>
+      <FooterSection/>
     </div>
   )
 } 

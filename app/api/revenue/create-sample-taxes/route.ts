@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const token = authHeader.substring(7)
     
     // Forward to backend API
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/revenue/create-sample-taxes`
+    const backendUrl = 'http://127.0.0.1:3000/revenue/create-sample-taxes'
     const response = await fetch(backendUrl, {
       method: 'POST',
       headers: {

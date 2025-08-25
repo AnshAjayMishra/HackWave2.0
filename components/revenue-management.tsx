@@ -20,6 +20,7 @@ import {
   Clock,
   AlertTriangle,
   Plus,
+  RotateCcw,
   Wallet,
   Building,
   Droplets,
@@ -81,14 +82,111 @@ const RevenueManagement = () => {
     }
   }, [user])
 
+  // Add page visibility listener to refresh data when user returns to tab
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user) {
+        console.log('Page became visible, refreshing data...')
+        fetchTaxSummary()
+        fetchPaymentHistory()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [user])
+
+  // Add focus listener to refresh data when window gains focus
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user) {
+        console.log('Window focused, refreshing data...')
+        fetchTaxSummary()
+        fetchPaymentHistory()
+      }
+    }
+
+    window.addEventListener('focus', handleFocus)
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [user])
+
   const fetchTaxSummary = async () => {
     try {
       setLoading(true)
       const token = localStorage.getItem('authToken')
       
-      // Try backend API first
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:3000'
-      const response = await fetch(`${backendUrl}/revenue/summary`, {
+      // First try the new bills API
+      try {
+        const billsResponse = await fetch('/api/bills', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (billsResponse.ok) {
+          const billsData = await billsResponse.json()
+          console.log('Bills API Response:', billsData)
+          
+          if (billsData.success && billsData.bills) {
+            // Convert bills API format to tax records format
+            const convertedTaxSummary: TaxSummary = {
+              total_pending: billsData.statistics.totalPending,
+              total_paid: billsData.statistics.totalPaid,
+              total_overdue: billsData.statistics.overdue,
+              property_taxes: billsData.bills.filter((bill: any) => bill.type === 'property_tax').map((bill: any) => ({
+                id: bill.id,
+                type: 'property' as const,
+                amount: bill.amount,
+                due_date: bill.dueDate,
+                status: bill.status,
+                description: bill.description,
+                year: bill.assessmentYear || '2024',
+                property_id: bill.propertyId,
+                created_at: new Date().toISOString()
+              })),
+              water_taxes: billsData.bills.filter((bill: any) => bill.type === 'water_bill').map((bill: any) => ({
+                id: bill.id,
+                type: 'water' as const,
+                amount: bill.amount,
+                due_date: bill.dueDate,
+                status: bill.status,
+                description: bill.description,
+                year: '2024',
+                property_id: bill.connectionId,
+                meter_reading: bill.meterReading,
+                created_at: new Date().toISOString()
+              })),
+              garbage_taxes: billsData.bills.filter((bill: any) => bill.type === 'garbage_fee').map((bill: any) => ({
+                id: bill.id,
+                type: 'garbage' as const,
+                amount: bill.amount,
+                due_date: bill.dueDate,
+                status: bill.status,
+                description: bill.description,
+                year: '2024',
+                created_at: new Date().toISOString()
+              }))
+            }
+            
+            setTaxSummary(convertedTaxSummary)
+            setError('')
+            setLoading(false)
+            return
+          }
+        }
+      } catch (billsError) {
+        console.warn('Bills API not available, falling back to revenue API:', billsError)
+      }
+      
+      // Fallback to existing revenue API
+      const response = await fetch('/api/revenue?endpoint=summary', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -97,7 +195,19 @@ const RevenueManagement = () => {
 
       if (response.ok) {
         const data = await response.json()
-        setTaxSummary(data)
+        console.log('Revenue API Response:', data)
+        
+        // Ensure the data has the correct structure
+        const normalizedData: TaxSummary = {
+          total_pending: data.total_pending || 0,
+          total_paid: data.total_paid || 0,
+          total_overdue: data.total_overdue || 0,
+          property_taxes: Array.isArray(data.property_taxes) ? data.property_taxes : [],
+          water_taxes: Array.isArray(data.water_taxes) ? data.water_taxes : [],
+          garbage_taxes: Array.isArray(data.garbage_taxes) ? data.garbage_taxes : []
+        }
+        
+        setTaxSummary(normalizedData)
       } else {
         // Fallback to mock data if backend not available
         const mockSummary: TaxSummary = {
@@ -169,14 +279,49 @@ const RevenueManagement = () => {
       }
     } catch (error) {
       console.error('Error fetching tax summary:', error)
-      // Use mock data on error
+      // Use mock data on error with proper structure
       const mockSummary: TaxSummary = {
         total_pending: 15500,
         total_paid: 8500,
         total_overdue: 3200,
-        property_taxes: [],
-        water_taxes: [],
-        garbage_taxes: []
+        property_taxes: [
+          {
+            id: 'prop_001',
+            type: 'property',
+            amount: 12000,
+            due_date: '2024-12-31',
+            status: 'pending',
+            description: 'Annual Property Tax 2024',
+            year: '2024',
+            property_id: 'PROP123456',
+            created_at: '2024-01-01T00:00:00Z'
+          }
+        ],
+        water_taxes: [
+          {
+            id: 'water_001',
+            type: 'water',
+            amount: 2500,
+            due_date: '2024-09-15',
+            status: 'pending',
+            description: 'Water Bill - August 2024',
+            year: '2024',
+            meter_reading: 1250,
+            created_at: '2024-08-01T00:00:00Z'
+          }
+        ],
+        garbage_taxes: [
+          {
+            id: 'garbage_001',
+            type: 'garbage',
+            amount: 1000,
+            due_date: '2024-10-31',
+            status: 'pending',
+            description: 'Garbage Collection Fee - October 2024',
+            year: '2024',
+            created_at: '2024-10-01T00:00:00Z'
+          }
+        ]
       }
       setTaxSummary(mockSummary)
     } finally {
@@ -188,9 +333,8 @@ const RevenueManagement = () => {
     try {
       const token = localStorage.getItem('authToken')
       
-      // Try backend API first
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:3000'
-      const response = await fetch(`${backendUrl}/revenue/payment-history`, {
+      // Use Next.js API route
+      const response = await fetch('/api/revenue?endpoint=payment-history', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -199,7 +343,7 @@ const RevenueManagement = () => {
 
       if (response.ok) {
         const data = await response.json()
-        setPaymentHistory(data)
+        setPaymentHistory(Array.isArray(data) ? data : [])
       } else {
         // Mock payment history
         const mockHistory: PaymentHistory[] = [
@@ -229,14 +373,25 @@ const RevenueManagement = () => {
     }
   }
 
+  const refreshData = async () => {
+    console.log('Manual refresh triggered...')
+    setError('')
+    setSuccess('')
+    await Promise.all([
+      fetchTaxSummary(),
+      fetchPaymentHistory()
+    ])
+    setSuccess('Data refreshed successfully!')
+    setTimeout(() => setSuccess(''), 3000)
+  }
+
   const createSampleTaxes = async () => {
     try {
       setLoading(true)
       const token = localStorage.getItem('authToken')
       
-      // Try backend API first
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:3000'
-      const response = await fetch(`${backendUrl}/revenue/create-sample-taxes`, {
+      // Use Next.js API route
+      const response = await fetch('/api/revenue/create-sample-taxes', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -267,33 +422,113 @@ const RevenueManagement = () => {
     try {
       const token = localStorage.getItem('authToken')
       
-      // Try to update backend
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:3000'
-      const response = await fetch(`${backendUrl}/revenue/pay`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          tax_type: selectedTax?.type,
-          tax_id: selectedTax?.id,
-          amount: selectedTax?.amount,
-          payment_id: paymentData.razorpay_payment_id,
-          order_id: paymentData.razorpay_order_id
-        })
-      })
-
-      if (response.ok) {
-        setSuccess(`Payment of ₹${selectedTax?.amount} completed successfully!`)
-        fetchTaxSummary()
-        fetchPaymentHistory()
-      } else {
-        setError('Payment was processed but updating records failed')
+      // Create payment record for local storage as fallback
+      const newPayment: PaymentHistory = {
+        id: paymentData.razorpay_payment_id,
+        tax_id: selectedTax?.id || '',
+        amount: selectedTax?.amount || 0,
+        payment_date: new Date().toISOString(),
+        payment_method: 'online',
+        transaction_id: paymentData.razorpay_payment_id,
+        status: 'success'
       }
+
+      // Always add to local state first for immediate feedback
+      setPaymentHistory(prev => {
+        const prevArray = Array.isArray(prev) ? prev : []
+        return [newPayment, ...prevArray]
+      })
+      
+      // Try to update backend via bills payment API first
+      try {
+        const billsPaymentResponse = await fetch('/api/bills/payment', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            billId: selectedTax?.id,
+            paymentId: paymentData.razorpay_payment_id,
+            paymentStatus: 'paid',
+            razorpayData: paymentData
+          })
+        })
+
+        if (billsPaymentResponse.ok) {
+          const billsResult = await billsPaymentResponse.json()
+          console.log('Bills payment processed:', billsResult)
+          
+          // Update tax summary to reflect payment
+          if (taxSummary && selectedTax) {
+            const updatedSummary = { ...taxSummary }
+            
+            // Update the specific tax record
+            const updateTaxStatus = (taxes: TaxRecord[]) => 
+              taxes.map(tax => 
+                tax.id === selectedTax.id 
+                  ? { ...tax, status: 'paid' as const }
+                  : tax
+              )
+            
+            updatedSummary.property_taxes = updateTaxStatus(updatedSummary.property_taxes)
+            updatedSummary.water_taxes = updateTaxStatus(updatedSummary.water_taxes)
+            updatedSummary.garbage_taxes = updateTaxStatus(updatedSummary.garbage_taxes)
+            
+            // Update totals
+            updatedSummary.total_pending -= selectedTax.amount
+            updatedSummary.total_paid += selectedTax.amount
+            
+            setTaxSummary(updatedSummary)
+          }
+          
+          setSuccess(`Payment successful! Receipt: ${billsResult.receiptNumber}`)
+          setShowPayment(false)
+          setSelectedTax(null)
+          return
+        }
+      } catch (billsError) {
+        console.warn('Bills payment API not available, trying revenue API:', billsError)
+      }
+      
+      // Fallback to existing revenue API
+      try {
+        const response = await fetch('/api/revenue', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            tax_type: selectedTax?.type,
+            tax_id: selectedTax?.id,
+            amount: selectedTax?.amount,
+            payment_id: paymentData.razorpay_payment_id,
+            order_id: paymentData.razorpay_order_id,
+            transaction_id: paymentData.razorpay_payment_id,
+            payment_date: new Date().toISOString(),
+            description: selectedTax?.description || `Payment for ${selectedTax?.type}`,
+            status: 'success'
+          })
+        })
+
+        if (response.ok) {
+          setSuccess(`Payment of ₹${selectedTax?.amount} completed successfully!`)
+          // Refresh data from backend
+          fetchTaxSummary()
+          fetchPaymentHistory()
+        } else {
+          console.warn('Backend payment recording failed, but payment was successful')
+          setSuccess(`Payment of ₹${selectedTax?.amount} completed successfully! (Record saved locally)`)
+        }
+      } catch (backendError) {
+        console.warn('Backend payment recording failed:', backendError)
+        setSuccess(`Payment of ₹${selectedTax?.amount} completed successfully! (Record saved locally)`)
+      }
+      
     } catch (error) {
       console.error('Error processing payment:', error)
-      setError('Payment was processed but updating records failed')
+      setError('Payment was processed but recording failed')
     }
 
     setShowPayment(false)
@@ -302,11 +537,52 @@ const RevenueManagement = () => {
 
   const getAllTaxes = () => {
     if (!taxSummary) return []
+    
+    // Ensure each property is an array before spreading
+    const propertyTaxes = Array.isArray(taxSummary.property_taxes) ? taxSummary.property_taxes : []
+    const waterTaxes = Array.isArray(taxSummary.water_taxes) ? taxSummary.water_taxes : []
+    const garbageTaxes = Array.isArray(taxSummary.garbage_taxes) ? taxSummary.garbage_taxes : []
+    
     return [
-      ...taxSummary.property_taxes,
-      ...taxSummary.water_taxes,
-      ...taxSummary.garbage_taxes
+      ...propertyTaxes,
+      ...waterTaxes,
+      ...garbageTaxes
     ]
+  }
+
+  const downloadReceipt = (payment: any) => {
+    // Ensure payment object exists and has required properties
+    if (!payment || !payment.id) {
+      console.error('Invalid payment object for receipt generation')
+      return
+    }
+
+    // Create a simple receipt as PDF-like content
+    const receiptContent = `
+MUNICIPAL SERVICES PAYMENT RECEIPT
+================================
+
+Payment ID: ${payment.id || 'N/A'}
+Date: ${payment.created_at ? new Date(payment.created_at).toLocaleDateString() : new Date().toLocaleDateString()}
+Amount: ₹${payment.amount || '0'}
+Type: ${payment.type ? payment.type.replace('_', ' ').toUpperCase() : 'N/A'}
+Status: ${payment.status || 'N/A'}
+Description: ${payment.description || 'No description available'}
+
+Thank you for your payment!
+Municipal Services Portal
+    `.trim()
+
+    // Create and download as text file (in a real app, you'd generate PDF)
+    const blob = new Blob([receiptContent], { type: 'text/plain' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `receipt_${payment.id}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
   }
 
   const filteredTaxes = getAllTaxes().filter(tax => {
@@ -344,13 +620,27 @@ const RevenueManagement = () => {
     )
   }
 
+  // Helper function to map tax type to service type enum
+  const getServiceType = (taxType: string) => {
+    switch (taxType) {
+      case 'property':
+        return 'property_tax'
+      case 'water':
+        return 'water_bill'
+      case 'garbage':
+        return 'garbage_fee'
+      default:
+        return 'other'
+    }
+  }
+
   if (showPayment && selectedTax) {
     return (
       <PaymentComponent
         amount={selectedTax.amount}
         title={`Pay ${selectedTax.type.charAt(0).toUpperCase() + selectedTax.type.slice(1)} Bill`}
         description={selectedTax.description}
-        serviceType="tax"
+        serviceType={getServiceType(selectedTax.type)}
         serviceId={selectedTax.id}
         metadata={{
           billType: selectedTax.type,
@@ -375,10 +665,28 @@ const RevenueManagement = () => {
           <h2 className="text-3xl font-bold">Bills & Payments</h2>
           <p className="text-muted-foreground">Manage your municipal bills and payment history</p>
         </div>
-        <Button onClick={createSampleTaxes} disabled={loading} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Create Sample Bills
-        </Button>
+        <div className="flex gap-2">
+          {/* Refresh button */}
+          <Button 
+            onClick={refreshData} 
+            disabled={loading} 
+            variant="outline" 
+            className="flex items-center gap-2"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Refresh
+          </Button>
+          {/* Only show create sample bills if no bills exist */}
+          {taxSummary && 
+           taxSummary.property_taxes.length === 0 && 
+           taxSummary.water_taxes.length === 0 && 
+           taxSummary.garbage_taxes.length === 0 && (
+            <Button onClick={createSampleTaxes} disabled={loading} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Create Sample Bills
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Alerts */}
@@ -569,7 +877,11 @@ const RevenueManagement = () => {
                       </div>
                       <div className="flex items-center space-x-2">
                         <Badge className="bg-green-100 text-green-800">Success</Badge>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => downloadReceipt(payment)}
+                        >
                           <Download className="h-4 w-4 mr-1" />
                           Receipt
                         </Button>

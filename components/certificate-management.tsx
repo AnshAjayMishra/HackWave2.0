@@ -13,13 +13,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Plus, Search, Filter, MapPin, Calendar, User, AlertCircle, CheckCircle, Clock, XCircle, FileText, Eye, Download } from 'lucide-react'
-import dynamic from 'next/dynamic'
+import CertificateWithPayment from './certificate-with-payment'
 
-// Dynamically import payment component to avoid SSR issues
-const CertificateWithPayment = dynamic(() => import('./certificate-with-payment'), {
-  ssr: false,
-  loading: () => <div className="flex items-center justify-center p-8">Loading payment component...</div>
-})
+// Remove the dynamic import since it's causing chunk loading issues
 
 interface CertificateType {
   type: string
@@ -71,6 +67,8 @@ export default function CertificateManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [selectedCertType, setSelectedCertType] = useState('')
   const [requirements, setRequirements] = useState<string[]>([])
+  const [selectedApplication, setSelectedApplication] = useState<CertificateApplication | null>(null)
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
   
   // Payment workflow states
   const [showPaymentFlow, setShowPaymentFlow] = useState(false)
@@ -129,54 +127,72 @@ export default function CertificateManagement() {
 
   const fetchCertificateTypes = async () => {
     try {
-      // Mock data since certificates API might not be fully implemented
-      const mockTypes: CertificateType[] = [
-        {
-          type: 'birth',
-          name: 'Birth Certificate',
-          description: 'Official document certifying the birth of a person',
-          requirements: [
-            'Hospital birth record',
-            'Parents identity proof',
-            'Address proof',
-            'Application form'
-          ],
-          processingTime: '7-10 working days',
-          fee: 50
-        },
-        {
-          type: 'death',
-          name: 'Death Certificate',
-          description: 'Official document certifying the death of a person',
-          requirements: [
-            'Medical certificate of death',
-            'Identity proof of deceased',
-            'Applicant identity proof',
-            'Address proof'
-          ],
-          processingTime: '5-7 working days',
-          fee: 50
-        },
-        {
-          type: 'marriage',
-          name: 'Marriage Certificate',
-          description: 'Official document certifying the marriage between two individuals',
-          requirements: [
-            'Marriage registration form',
-            'Identity proof of both parties',
-            'Age proof of both parties',
-            'Address proof',
-            'Passport size photographs',
-            'Witness identity proofs'
-          ],
-          processingTime: '10-15 working days',
-          fee: 100
-        }
-      ]
-      setCertificateTypes(mockTypes)
+      // Try to fetch from backend first
+      const response = await fetch('/api/certificates/types')
+      
+      if (response.ok) {
+        const data = await response.json()
+        const backendTypes = data.certificate_types?.map((type: any) => ({
+          type: type.type,
+          name: type.name,
+          description: type.description,
+          requirements: type.requirements,
+          processingTime: type.processing_time,
+          fee: type.fee
+        })) || []
+        
+        setCertificateTypes(backendTypes)
+        return
+      }
     } catch (error) {
-      console.error('Error fetching certificate types:', error)
+      console.warn('Failed to fetch certificate types from backend, using mock data')
     }
+    
+    // Fallback to mock data
+    const mockTypes: CertificateType[] = [
+      {
+        type: 'birth',
+        name: 'Birth Certificate',
+        description: 'Official document certifying the birth of a person',
+        requirements: [
+          'Hospital birth record',
+          'Parents identity proof',
+          'Address proof',
+          'Application form'
+        ],
+        processingTime: '7-10 working days',
+        fee: 50
+      },
+      {
+        type: 'death',
+        name: 'Death Certificate',
+        description: 'Official document certifying the death of a person',
+        requirements: [
+          'Medical certificate of death',
+          'Identity proof of deceased',
+          'Applicant identity proof',
+          'Address proof'
+        ],
+        processingTime: '5-7 working days',
+        fee: 50
+      },
+      {
+        type: 'marriage',
+        name: 'Marriage Certificate',
+        description: 'Official document certifying the marriage between two individuals',
+        requirements: [
+          'Marriage registration form',
+          'Identity proof of both parties',
+          'Age proof of both parties',
+          'Address proof',
+          'Passport size photographs',
+          'Witness identity proofs'
+        ],
+        processingTime: '10-15 working days',
+        fee: 100
+      }
+    ]
+    setCertificateTypes(mockTypes)
   }
 
   const fetchApplications = async () => {
@@ -184,42 +200,59 @@ export default function CertificateManagement() {
     
     try {
       setLoading(true)
-      // Mock data for now - in real implementation this would call the certificates API
-      const mockApplications: CertificateApplication[] = [
-        {
-          id: '1',
-          application_id: 'BIRTH2024001',
-          certificate_type: 'birth',
-          status: 'pending',
-          created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          data: {
-            child_name: 'Aarav Sharma',
-            date_of_birth: '2024-01-15',
-            father_name: 'Rohit Sharma',
-            mother_name: 'Priya Sharma'
-          },
-          documents: []
-        },
-        {
-          id: '2',
-          application_id: 'DEATH2024002',
-          certificate_type: 'death',
-          status: 'approved',
-          created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-          updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          data: {
-            deceased_name: 'Ramesh Kumar',
-            date_of_death: '2024-07-20',
-            age_at_death: 75
-          },
-          documents: []
+      const token = localStorage.getItem('authToken')
+      
+      // Call real backend API
+      const response = await fetch('/api/certificates/my-applications', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-      ]
-      setApplications(mockApplications)
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Transform backend data to frontend format
+        const transformedApplications = data.certificates?.map((cert: any) => ({
+          id: cert._id || cert.id,
+          application_id: cert.application_id,
+          certificate_type: cert.certificate_type,
+          status: cert.status,
+          created_at: cert.created_at,
+          updated_at: cert.updated_at,
+          data: cert.certificate_data,
+          documents: cert.documents || [],
+          admin_notes: cert.admin_notes
+        })) || []
+        
+        setApplications(transformedApplications)
+      } else {
+        console.warn('Failed to fetch applications from backend, using mock data')
+        // Fallback to mock data
+        const mockApplications: CertificateApplication[] = [
+          {
+            id: '1',
+            application_id: 'BIRTH2024001',
+            certificate_type: 'birth',
+            status: 'pending',
+            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+            updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+            data: {
+              child_name: 'Aarav Sharma',
+              date_of_birth: '2024-01-15',
+              father_name: 'Rohit Sharma',
+              mother_name: 'Priya Sharma'
+            },
+            documents: []
+          }
+        ]
+        setApplications(mockApplications)
+      }
     } catch (error) {
       setError('Error fetching applications')
       console.error('Error:', error)
+      // Use empty array on error
+      setApplications([])
     } finally {
       setLoading(false)
     }
@@ -930,7 +963,14 @@ export default function CertificateManagement() {
                         <span>Updated: {new Date(app.updated_at).toLocaleDateString()}</span>
                       </div>
                       <div className="flex justify-end gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedApplication(app)
+                            setIsDetailsDialogOpen(true)
+                          }}
+                        >
                           <Eye className="h-4 w-4 mr-2" />
                           View Details
                         </Button>
@@ -956,6 +996,96 @@ export default function CertificateManagement() {
           </div>
         </CardContent>
       </Card>
+      
+      {/* Certificate Details Dialog */}
+      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Certificate Application Details
+            </DialogTitle>
+            <DialogDescription>
+              Detailed information about certificate application
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedApplication && (
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg border-b pb-2">Basic Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Application ID</Label>
+                    <p className="text-sm">{selectedApplication.application_id}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Certificate Type</Label>
+                    <p className="text-sm capitalize">{selectedApplication.certificate_type.replace('_', ' ')}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Status</Label>
+                    <Badge className={`${statusColors[selectedApplication.status as keyof typeof statusColors]} text-white`}>
+                      {selectedApplication.status.replace('_', ' ').toUpperCase()}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Applied Date</Label>
+                    <p className="text-sm">{new Date(selectedApplication.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Last Updated</Label>
+                    <p className="text-sm">{new Date(selectedApplication.updated_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Application Data */}
+              {selectedApplication.data && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-lg border-b pb-2">Application Details</h3>
+                  <div className="grid grid-cols-1 gap-3">
+                    {Object.entries(selectedApplication.data).map(([key, value]) => (
+                      <div key={key}>
+                        <Label className="text-sm font-medium text-muted-foreground capitalize">
+                          {key.replace('_', ' ')}
+                        </Label>
+                        <p className="text-sm">{String(value)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Documents */}
+              {selectedApplication.documents && selectedApplication.documents.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-lg border-b pb-2">Documents</h3>
+                  <div className="grid grid-cols-1 gap-2">
+                    {selectedApplication.documents.map((doc, index) => (
+                      <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
+                        <FileText className="h-4 w-4" />
+                        <span className="text-sm">{doc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Admin Notes */}
+              {selectedApplication.admin_notes && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-lg border-b pb-2">Admin Notes</h3>
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="text-sm">{selectedApplication.admin_notes}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
