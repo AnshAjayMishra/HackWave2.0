@@ -61,6 +61,16 @@ interface PaymentHistory {
   status: 'success' | 'failed' | 'pending'
 }
 
+// Helper function to map tax types to payment service types
+const getServiceTypeForPayment = (taxType: 'property' | 'water' | 'garbage'): 'property_tax' | 'water_bill' | 'garbage_fee' => {
+  const mapping = {
+    'property': 'property_tax' as const,
+    'water': 'water_bill' as const, 
+    'garbage': 'garbage_fee' as const
+  }
+  return mapping[taxType]
+}
+
 const RevenueManagement = () => {
   const { user } = useUser()
   const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
@@ -350,7 +360,7 @@ const RevenueManagement = () => {
         amount={selectedTax.amount}
         title={`Pay ${selectedTax.type.charAt(0).toUpperCase() + selectedTax.type.slice(1)} Bill`}
         description={selectedTax.description}
-        serviceType="bill"
+        serviceType={getServiceTypeForPayment(selectedTax.type)}
         serviceId={selectedTax.id}
         metadata={{
           billType: selectedTax.type,
@@ -360,9 +370,6 @@ const RevenueManagement = () => {
         onPaymentSuccess={handlePaymentSuccess}
         onPaymentFailure={(error) => {
           setError('Payment failed. Please try again.')
-          setShowPayment(false)
-        }}
-        onCancel={() => {
           setShowPayment(false)
           setSelectedTax(null)
         }}

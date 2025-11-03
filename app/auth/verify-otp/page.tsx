@@ -60,6 +60,8 @@ function VerifyOtpContent() {
             <input
               key={index}
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               maxLength={1}
               value={digit}
               onChange={(e) => handleChange(index, e.target.value)}
@@ -67,6 +69,9 @@ function VerifyOtpContent() {
               ref={(el) => {
                 inputsRef.current[index] = el;
               }}
+              title={`OTP digit ${index + 1}`}
+              aria-label={`OTP digit ${index + 1}`}
+              placeholder="•"
               className="w-12 h-12 text-center text-teal-400 text-xl bg-[#1e1e1e] border border-teal-400 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-300"
             />
           ))}

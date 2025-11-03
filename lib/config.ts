@@ -7,6 +7,9 @@ export const config = {
     timeout: 10000,
   },
   
+  // Backend API URL for direct backend calls (used by admin routes)
+  apiUrl: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:3000',
+  
   // Backend service endpoints
   endpoints: {
     auth: {
