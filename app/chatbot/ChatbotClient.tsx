@@ -198,8 +198,8 @@ export default function ChatbotClient() {
                 </div>
               </div>
             )}
-{/* 
-            Quick Actions
+
+            {/* Quick Actions */}
             {messages.length === 1 && (
               <div className="text-center space-y-4">
                 <p className="text-sm text-muted-foreground">Try these quick actions:</p>
@@ -217,7 +217,7 @@ export default function ChatbotClient() {
                   ))}
                 </div>
               </div>
-            )} */}
+            )}
 
             <div ref={messagesEndRef} />
           </div>

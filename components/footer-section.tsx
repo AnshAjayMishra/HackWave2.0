@@ -105,6 +105,7 @@ export function FooterSection() {
                   Get Started Free
                 </Button>
               </Link>
+              <span className="text-xl font-bold text-foreground">JanVaani</span>
             </div>
 
             {/* Enhanced Footer Links with Teal Theme */}

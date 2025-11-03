@@ -3,12 +3,11 @@
 import { useUser } from "@/contexts/user-context"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
-
+import { Header } from "@/components/header"
 import {HeroSection} from "@/components/hero-section"
 import { FeaturesSection } from "@/components/features-section"
 import { HowItWorksSection } from "@/components/how-it-works-section"
 import { BenefitsSection } from "@/components/benefits-section"
-import { CTASection } from "@/components/cta-section"
 import { FooterSection } from "@/components/footer-section"
 
 export default function LandingPage() {
@@ -51,10 +50,7 @@ export default function LandingPage() {
         <div className="relative z-10 max-w-[1320px] mx-auto px-6 mt-16">
           <BenefitsSection />
         </div>
-
-       
-
-        <div className="relative z-10 max-w-[1320px] mx-auto px-6 mt-16">
+          <div className="relative z-10 max-w-[1320px] mx-auto px-6 mt-16">
           <FooterSection />
         </div>
       </div>
